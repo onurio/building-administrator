@@ -1,20 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './App.scss';
-import { Redirect, Router } from '@reach/router';
+import { Router } from '@reach/router';
 import Admin from './views/Admin/Admin';
 import firebase from 'firebase';
 import firebaseConfig from './firebaseCred';
-// import GeneralSettings from './views/Admin/GeneralSettings';
-// import Artists from './views/Admin/Artists';
-// import ArtistArtworks from './views/Admin/ArtistArtworks';
-// import MainView from './views/MainView';
-import {
-  getArtists,
-  getCategories,
-  getExpos,
-  getHours,
-} from './utils/dbRequests';
-import logo from './assets/images/logo.png';
 import MainView from './views/MainView';
 import Apartments from './views/Admin/Apartments';
 import Users from './views/Admin/Users';
