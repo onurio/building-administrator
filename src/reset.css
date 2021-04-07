@@ -1,0 +1,101 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  display: block;
+}
+
+hr,
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+img,
+ul,
+li {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  outline: 0;
+}
+
+ul,
+ol,
+li {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-weight: normal;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  -webkit-text-decoration-skip: objects;
+}
+
+a,
+button,
+input,
+textarea {
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+}
+
+select,
+button,
+input {
+  font-family: inherit;
+  overflow: visible;
+  border: none;
+  /* Para safari , IOS*/
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+/* Remove arrow on chrome */
+select::-ms-expand,
+button::-ms-expand input::-ms-expand {
+  display: none;
+}
+
+select:hover,
+button:hover,
+input:hover {
+  cursor: pointer;
+}
+
+input[type='submit']:hover {
+  cursor: pointer;
+}
+
+audio:not([controls]) {
+  display: none;
+  height: 0;
+}
+
+audio,
+video,
+canvas {
+  display: inline-block;
+}
+
+button,
+input,
+select {
+  appearance: none;
+}
