@@ -7,7 +7,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
 import UserEdit from './UserEdit';
 import { ModalContext } from './components/SimpleModal';
-import { getUsers, saveUser, deleteUser } from '../../utils/dbRequests';
+import { saveUser, deleteUser } from '../../utils/dbRequests';
 import DeleteModal from './components/DeleteModal';
 
 const useStyles = makeStyles((theme) => ({
@@ -24,19 +24,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Users({ db, storage }) {
+export default function Users({ storage, auth, users, refresh }) {
   const classes = useStyles();
   const handleModal = useContext(ModalContext);
-  const [users, setUsers] = useState([]);
-
-  const init = async () => {
-    refresh();
-  };
-
-  console.log(users);
-  useEffect(() => {
-    init();
-  }, []);
 
   const columns = [
     {
@@ -46,13 +36,19 @@ export default function Users({ db, storage }) {
     },
     {
       field: 'email',
-      headerName: 'Tenant',
+      headerName: 'Email',
       width: 250,
+    },
+    {
+      field: 'dni_ruc',
+      headerName: 'Dni/Ruc',
+      width: 150,
     },
     {
       field: 'apartment',
       headerName: 'Apartment',
       width: 150,
+      renderCell: (params) => params.value?.name || 'Not assigned',
     },
     {
       field: 'services',
@@ -60,10 +56,40 @@ export default function Users({ db, storage }) {
       width: 180,
     },
     {
+      field: 'debt',
+      headerName: 'Debt',
+      width: 90,
+    },
+    {
+      field: 'deposit',
+      headerName: 'Deposit',
+      width: 120,
+    },
+    {
+      field: 'tel',
+      headerName: 'Phone',
+      width: 110,
+    },
+    {
+      field: 'telEmergency',
+      headerName: 'E.Phone',
+      width: 110,
+    },
+    {
+      field: 'contract_start',
+      headerName: 'Contract End',
+      width: 150,
+    },
+    {
+      field: 'contract_end',
+      headerName: 'Contract Start',
+      width: 150,
+    },
+    {
       field: 'reciepts',
       headerName: 'Reciepts',
       sortable: false,
-      width: 150,
+      width: 120,
       renderCell: (params) => (
         <Button variant='outlined'>{params.value.length} Reciepts</Button>
       ),
@@ -98,7 +124,7 @@ export default function Users({ db, storage }) {
           onClick={() =>
             handleModal(
               <DeleteModal
-                onCancel={handleModal}
+                onCancel={() => handleModal()}
                 onSave={() => {
                   onDelete(params.value);
                   handleModal();
@@ -113,22 +139,31 @@ export default function Users({ db, storage }) {
       ),
     },
   ];
-  const refresh = async () => {
-    let processed = await getUsers(db);
-    processed = processed.map((user, index) => {
-      return { ...user, edit: index };
-    });
-    setUsers(processed);
-  };
 
-  const onSave = async (info) => {
-    await saveUser(db, info);
-    handleModal();
-    refresh();
+  const onSave = async (info, isEdit) => {
+    if (!isEdit) {
+      auth
+        .createUserWithEmailAndPassword(info.email, '12345678')
+        .then(() => {
+          saveUser(info);
+          handleModal();
+          refresh();
+        })
+        .catch((error) => {
+          handleModal();
+          refresh();
+
+          alert(error);
+        });
+    } else {
+      saveUser(info);
+      handleModal();
+      refresh();
+    }
   };
 
   const onDelete = async (id) => {
-    await deleteUser(db, id);
+    await deleteUser(id);
     refresh();
   };
 

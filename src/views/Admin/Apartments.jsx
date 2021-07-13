@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import { Button, IconButton, makeStyles, Typography } from '@material-ui/core';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import DataTable from './components/DataTable';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import EditIcon from '@material-ui/icons/Edit';
@@ -8,10 +8,9 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import ApartmentEdit from './ApartmentEdit';
 import { ModalContext } from './components/SimpleModal';
 import {
-  getApartments,
-  getCategories,
   saveApartment,
   deleteApartment,
+  saveUser,
 } from '../../utils/dbRequests';
 import DeleteModal from './components/DeleteModal';
 
@@ -29,19 +28,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Apartments({ db, storage }) {
+export default function Apartments({ users, apartments, refresh }) {
   const classes = useStyles();
   const handleModal = useContext(ModalContext);
-  const [apartments, setApartments] = useState([]);
-
-  const init = async () => {
-    refresh();
-  };
-
-  console.log(apartments);
-  useEffect(() => {
-    init();
-  }, []);
 
   const columns = [
     {
@@ -53,6 +42,7 @@ export default function Apartments({ db, storage }) {
       field: 'tenant',
       headerName: 'Tenant',
       width: 250,
+      renderCell: (params) => params.value?.name || 'Not assigned',
     },
     {
       field: 'rent',
@@ -96,7 +86,7 @@ export default function Apartments({ db, storage }) {
           onClick={() =>
             handleModal(
               <DeleteModal
-                onCancel={handleModal}
+                onCancel={() => handleModal()}
                 onSave={() => {
                   onDelete(params.value);
                   handleModal();
@@ -111,28 +101,35 @@ export default function Apartments({ db, storage }) {
       ),
     },
   ];
-  const refresh = async () => {
-    let processed = await getApartments(db);
-    processed = processed.map((apartment, index) => {
-      return { ...apartment, edit: index };
-    });
-    setApartments(processed);
-  };
 
-  const onSave = async (info) => {
-    await saveApartment(db, info);
+  const onSave = async (info, isEdit) => {
+    let tenant;
+    let apt = { ...info };
+
+    if (info.tenant && isEdit) {
+      const user = users.find((usr) => usr.id === info.tenant);
+      const updatedUser = {
+        ...user,
+        apartment: { id: info.id, name: info.name },
+      };
+      await saveUser(updatedUser);
+      tenant = { name: user.name, id: user.id };
+      apt.tenant = tenant;
+    }
+    await saveApartment(apt);
     handleModal();
     refresh();
   };
 
   const onDelete = async (id) => {
-    await deleteApartment(db, id);
+    await deleteApartment(id);
     refresh();
   };
 
   const openAdd = (apartment) => {
     handleModal(
       <ApartmentEdit
+        users={users}
         apartment={apartment}
         onSave={onSave}
         onCancel={() => handleModal()}

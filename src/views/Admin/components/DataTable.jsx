@@ -61,12 +61,12 @@ const useStyles = makeStyles((theme) => ({
 export default function DataTable({ columns = defaultColumns, rows }) {
   const classes = useStyles();
   return (
-    <div style={{ height: 500, width: '100%' }}>
+    <div style={{ height: '75vh', width: '100%' }}>
       <DataGrid
         className={classes.root}
         rows={rows}
         columns={columns}
-        pageSize={10}
+        pageSize={20}
       />
     </div>
   );

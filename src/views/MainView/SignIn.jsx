@@ -3,8 +3,6 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
@@ -32,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function SignIn({ login }) {
+export default function SignIn({ login, resetPassword }) {
   const classes = useStyles();
   const [email, setEmail] = useState();
   const [pass, setPass] = useState();
@@ -42,49 +40,60 @@ export default function SignIn({ login }) {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
+    <Container component='main' maxWidth='xs'>
       <CssBaseline />
       <div className={classes.paper}>
         <Avatar className={classes.avatar}>
           <LockOutlinedIcon />
         </Avatar>
-        <Typography component="h1" variant="h5">
+        <Typography component='h1' variant='h5'>
           Sign in
         </Typography>
         <form className={classes.form} noValidate>
           <TextField
-            variant="outlined"
-            margin="normal"
+            variant='outlined'
+            margin='normal'
             required
             fullWidth
             onChange={(e) => setEmail(e.target.value)}
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
+            id='email'
+            label='Email Address'
+            name='email'
+            autoComplete='email'
             autoFocus
           />
           <TextField
-            variant="outlined"
-            margin="normal"
+            variant='outlined'
+            margin='normal'
             required
             fullWidth
             onChange={(e) => setPass(e.target.value)}
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="current-password"
+            name='password'
+            label='Password'
+            type='password'
+            id='password'
+            autoComplete='current-password'
           />
           <Button
-            type="button"
+            type='button'
             fullWidth
             onClick={signIn}
-            variant="contained"
-            color="primary"
+            variant='contained'
+            color='primary'
             className={classes.submit}
           >
             Sign In
+          </Button>
+
+          <Button
+            type='button'
+            fullWidth
+            onClick={resetPassword}
+            variant='contained'
+            color='secondary'
+            className={classes.submit}
+          >
+            Reset Password
           </Button>
         </form>
       </div>

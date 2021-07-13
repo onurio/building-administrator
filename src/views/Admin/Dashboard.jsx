@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Divider from '@material-ui/core/Divider';
@@ -15,9 +14,6 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
-import CalendarTodayIcon from '@material-ui/icons/CalendarToday';
-import PersonIcon from '@material-ui/icons/Person';
-import SettingsIcon from '@material-ui/icons/Settings';
 import SimpleModal from './components/SimpleModal';
 import { Link } from '@reach/router';
 
@@ -77,12 +73,6 @@ function Dashboard({
 
   const drawer = (
     <div>
-      <div className={classes.toolbar}>
-        <ListItem button key='menu'>
-          <ListItemText primary='Menu' />
-        </ListItem>
-      </div>
-      <Divider />
       <List>
         {sideItems.map((sideItem) => (
           <Link className={classes.link} to={sideItem.link}>
@@ -125,7 +115,7 @@ function Dashboard({
           </Typography>
         </Toolbar>
       </AppBar>
-      <nav className={classes.drawer} aria-label='mailbox folders'>
+      <nav className={classes.drawer} aria-label='menu'>
         {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
         <Hidden smUp implementation='css'>
           <Drawer
@@ -163,13 +153,5 @@ function Dashboard({
     </div>
   );
 }
-
-Dashboard.propTypes = {
-  /**
-   * Injected by the documentation to work in an iframe.
-   * You won't need it on your project.
-   */
-  window: PropTypes.func,
-};
 
 export default Dashboard;

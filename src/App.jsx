@@ -7,78 +7,70 @@ import firebaseConfig from './firebaseCred';
 import MainView from './views/MainView';
 import Apartments from './views/Admin/Apartments';
 import Users from './views/Admin/Users';
-// import Expositions from './views/Admin/Expositions';
+import Loader from './components/Loader';
+import { initDB, setAlert } from './utils/dbRequests';
+import { Snackbar } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
+import GenerateReciepts from './views/Admin/GenerateReciepts';
+
+function Alert(props) {
+  return <MuiAlert elevation={6} variant='filled' {...props} />;
+}
 
 function App() {
   const auth = useRef();
-  const db = useRef();
   const storage = useRef();
   const app = useRef();
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [data, setData] = useState();
+  const [loading, setLoading] = useState(true);
+  const [snackProps, setSnackProps] = useState({
+    open: false,
+    isSuccess: true,
+    text: '',
+  });
 
-  const getData = async () => {
-    try {
-      // let newData = {
-      //   openingHours: await getHours(db.current),
-      //   categories: await getCategories(db.current),
-      //   expos: await getExpos(db.current),
-      //   artists: await getArtists(db.current),
-      // };
-      // setData(newData);
-      setData({});
-      setIsLoaded(true);
-    } catch (error) {
-      console.log(error);
-    }
+  const triggerSnack = (isSuccess = true, text) => {
+    setSnackProps({ isSuccess, text, open: true });
   };
 
   useEffect(() => {
     if (!app.current) {
       app.current = firebase.initializeApp(firebaseConfig);
+
       firebase.analytics();
       auth.current = firebase.auth();
-      db.current = firebase.firestore();
+
+      initDB();
+      setAlert(triggerSnack);
       storage.current = firebase.storage();
+      setLoading(false);
     }
-    getData();
   }, []);
 
-  if (!isLoaded || !data)
-    return (
-      <div className='loader'>
-        loading...
-        {/* <div className='loader-wrapper'>
-          <img width='100px' src={logo} alt='Logo' />
-          <div className='lds-ripple'>
-            <div></div>
-            <div></div>
-          </div>
-        </div> */}
-      </div>
-    );
+  const handleCloseSnack = () => {
+    setSnackProps((s) => ({ ...s, open: false }));
+  };
+
+  if (loading) return <Loader />;
 
   return (
     <div className='App'>
       <Router>
-        <MainView auth={auth.current} path='/' />
-        <Admin auth={auth.current} path='admin'>
-          {/* <GeneralSettings path='/' db={db.current} />
-          <Artists path='artists' storage={storage.current} db={db.current} />
-          <ArtistArtworks
-            path='artists/:id'
-            storage={storage.current}
-            db={db.current}
-          />
-          <Expositions
-            path='expositions'
-            storage={storage.current}
-            db={db.current}
-          /> */}
-          <Users path='users' db={db.current} />
-          <Apartments path='apartments' db={db.current} />
-        </Admin>
+        <MainView auth={auth.current} path='/*' />
+        <Admin auth={auth.current} path='admin/*' />
       </Router>
+      <Snackbar
+        open={snackProps.open}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        autoHideDuration={6000}
+        onClose={handleCloseSnack}
+      >
+        <Alert
+          onClose={handleCloseSnack}
+          severity={snackProps.isSuccess ? 'success' : 'error'}
+        >
+          {snackProps.text}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

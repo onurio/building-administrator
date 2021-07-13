@@ -1,32 +1,46 @@
 import React, { useEffect, useState } from 'react';
-import SignIn from './SignIn';
 import firebase from 'firebase';
 import Dashboard from './Dashboard';
 import SettingsIcon from '@material-ui/icons/Settings';
+import Users from './Users';
+import Apartments from './Apartments';
+import GenerateReciepts from './GenerateReciepts';
+import { Redirect, Router } from '@reach/router';
+import { getApartments, getUsers } from '../../utils/dbRequests';
+import Services from './Services';
 
 let sideItems = [
   {
+    key: 'services',
+    text: 'Services',
+    link: 'services',
+    icon: <SettingsIcon />,
+  },
+  {
     key: 'users',
     text: 'Users',
-    link: '/admin/users',
+    link: 'users',
     icon: <SettingsIcon />,
   },
   {
     key: 'apartments',
     text: 'Apartments',
-    link: '/admin/apartments',
+    link: 'apartments',
     icon: <SettingsIcon />,
   },
+
   {
-    key: 'services',
-    text: 'Services',
-    link: '/admin/services',
+    key: 'generate_recieptes',
+    text: 'Generate Reciepts',
+    link: 'generate-reciepts',
     icon: <SettingsIcon />,
   },
 ];
 
-export default function Admin({ auth, children }) {
+export default function Admin({ auth }) {
   const [isAuthenticaited, setIsAuthenticaited] = useState(false);
+  const [apartments, setApartments] = useState([]);
+  const [users, setUsers] = useState([]);
 
   const logout = () => {
     auth
@@ -42,24 +56,42 @@ export default function Admin({ auth, children }) {
   };
 
   useEffect(() => {
-    auth.onAuthStateChanged(function (user) {
-      if (user) {
-        if (
-          user.email === 'omrinuri@gmail.com' ||
-          user.email === 'edificio.juandelcarpio@gmail.com' ||
-          user.email === 'alborde86@gmail.com'
-        ) {
-          setIsAuthenticaited(true);
+    if (auth) {
+      auth.onAuthStateChanged(function (user) {
+        if (user) {
+          if (
+            user.email === 'omrinuri@gmail.com' ||
+            user.email === 'edificio.juandelcarpio@gmail.com' ||
+            user.email === 'alborde86@gmail.com'
+          ) {
+            setIsAuthenticaited(true);
+          } else {
+            setIsAuthenticaited(false);
+          }
+          // User is signed in.
         } else {
+          // No user is signed in.
           setIsAuthenticaited(false);
         }
-        // User is signed in.
-      } else {
-        // No user is signed in.
-        setIsAuthenticaited(false);
-      }
-    });
+      });
+    }
   }, [auth]);
+
+  const refresh = async () => {
+    const addIndexes = (arr) => {
+      return arr.map((item, index) => {
+        return { ...item, edit: index };
+      });
+    };
+    setApartments(addIndexes(await getApartments()));
+    setUsers(addIndexes(await getUsers()));
+  };
+
+  useEffect(() => {
+    if (isAuthenticaited) {
+      refresh();
+    }
+  }, [isAuthenticaited]);
 
   const login = () => {
     if (isAuthenticaited) return;
@@ -96,7 +128,23 @@ export default function Admin({ auth, children }) {
         path='/*'
         logout={logout}
       >
-        {children}
+        <Router>
+          <Redirect noThrow={true} from='/' to='services' />
+          <Services users={users} path='/services' />
+          <Users users={users} refresh={refresh} path='/users' auth={auth} />
+          <Apartments
+            apartments={apartments}
+            users={users}
+            refresh={refresh}
+            path='/apartments'
+          />
+          <GenerateReciepts
+            apartments={apartments}
+            users={users}
+            refresh={refresh}
+            path='/generate-reciepts'
+          />
+        </Router>
       </Dashboard>
     );
   } else {

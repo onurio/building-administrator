@@ -13,6 +13,7 @@ import {
   TextField,
   Typography,
 } from '@material-ui/core';
+import { isCellEditCommitKeys } from '@material-ui/data-grid';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -36,7 +37,6 @@ const useStyles = makeStyles((theme) => ({
 
 const initialApartment = {
   name: '',
-  tenant: {},
   bills: 0,
   rent: 0,
 };
@@ -52,8 +52,9 @@ export default function ApartmentEdit({
   const [apartmentInfo, setApartmentInfo] = useState(
     apartment || initialApartment
   );
-
-  useEffect(() => {}, []);
+  const [userLabels, setUserLabels] = useState(
+    users.map((user) => ({ label: user.name, value: user.id }))
+  );
 
   const handleChange = (e) => {
     setApartmentInfo((s) => ({ ...s, [e.target.name]: e.target.value }));
@@ -100,26 +101,28 @@ export default function ApartmentEdit({
           onChange={handleChange}
         />
       </Grid>
-      <Grid item xs={6}>
-        <FormControl className={classes.formControl}>
-          <InputLabel id='tenant'>Tenant</InputLabel>
-          <Select
-            labelId='tenant'
-            id='tenant'
-            onChange={(e) => {
-              setApartmentInfo((s) => ({ ...s, artCategory: e.target.value }));
-            }}
-            variant='outlined'
-            value={apartmentInfo.tenant || {}}
-          >
-            {users.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Grid>
+      {isEdit && (
+        <Grid item xs={6}>
+          <FormControl className={classes.formControl}>
+            <InputLabel id='tenant'>Tenant</InputLabel>
+            <Select
+              labelId='tenant'
+              id='tenant'
+              onChange={(e) => {
+                setApartmentInfo((s) => ({ ...s, tenant: e.target.value }));
+              }}
+              variant='outlined'
+              value={apartmentInfo.tenant?.id || ''}
+            >
+              {userLabels.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+      )}
 
       <Grid item xs={6}></Grid>
       <Grid item xs={3}>
@@ -133,7 +136,7 @@ export default function ApartmentEdit({
       </Grid>
       <Grid item xs={3}>
         <Button
-          onClick={() => onSave(apartmentInfo)}
+          onClick={() => onSave(apartmentInfo, isCellEditCommitKeys)}
           className={classes.input}
           variant='contained'
           color='primary'
