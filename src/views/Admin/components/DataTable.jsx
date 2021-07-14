@@ -58,10 +58,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function DataTable({ columns = defaultColumns, rows }) {
+export default function DataTable({
+  columns = defaultColumns,
+  rows,
+  customStyles = {},
+}) {
   const classes = useStyles();
   return (
-    <div style={{ height: '75vh', width: '100%' }}>
+    <div
+      style={{
+        height: '75vh',
+        width: '100%',
+        ...customStyles,
+      }}
+    >
       <DataGrid
         className={classes.root}
         rows={rows}

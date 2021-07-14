@@ -29,11 +29,18 @@ const useStyles = makeStyles((theme) => ({
     flexWrap: 'wrap',
     padding: 20,
     marginTop: 40,
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+      maxWidth: '100vw',
+    },
     backgroundColor: 'cadetblue',
   },
   reserveSection: {
     position: 'relative',
     width: 360,
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+    },
     padding: 20,
   },
   reservedNotice: {

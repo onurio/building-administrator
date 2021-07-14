@@ -1,11 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Button,
-  Chip,
   FormControl,
   Grid,
-  Input,
   InputLabel,
   makeStyles,
   MenuItem,
@@ -13,7 +11,6 @@ import {
   TextField,
   Typography,
 } from '@material-ui/core';
-import { isCellEditCommitKeys } from '@material-ui/data-grid';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -27,7 +24,8 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2, 4, 3),
   },
   input: {
-    width: '100%',
+    width: '90%',
+    margin: '0 5%',
   },
   formControl: {
     minWidth: '100%',
@@ -39,6 +37,7 @@ const initialApartment = {
   name: '',
   bills: 0,
   rent: 0,
+  municipality: 0,
 };
 
 export default function ApartmentEdit({
@@ -67,7 +66,7 @@ export default function ApartmentEdit({
           {isEdit ? 'Edit apartment info' : 'Add apartment'}
         </Typography>
       </Grid>
-      <Grid item xs={6}>
+      <Grid item xs={4}>
         <TextField
           className={classes.input}
           variant='outlined'
@@ -79,7 +78,7 @@ export default function ApartmentEdit({
         />
       </Grid>
 
-      <Grid item xs={6}>
+      <Grid item xs={4}>
         <TextField
           className={classes.input}
           variant='outlined'
@@ -90,7 +89,7 @@ export default function ApartmentEdit({
           onChange={handleChange}
         />
       </Grid>
-      <Grid item xs={6}>
+      <Grid item xs={4}>
         <TextField
           className={classes.input}
           variant='outlined'
@@ -101,8 +100,19 @@ export default function ApartmentEdit({
           onChange={handleChange}
         />
       </Grid>
+      <Grid item xs={4}>
+        <TextField
+          className={classes.input}
+          variant='outlined'
+          type='number'
+          label='Municipality Tax'
+          value={apartmentInfo.municipality}
+          name='municipality'
+          onChange={handleChange}
+        />
+      </Grid>
       {isEdit && (
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <FormControl className={classes.formControl}>
             <InputLabel id='tenant'>Tenant</InputLabel>
             <Select
@@ -136,7 +146,7 @@ export default function ApartmentEdit({
       </Grid>
       <Grid item xs={3}>
         <Button
-          onClick={() => onSave(apartmentInfo, isCellEditCommitKeys)}
+          onClick={() => onSave(apartmentInfo, isEdit)}
           className={classes.input}
           variant='contained'
           color='primary'

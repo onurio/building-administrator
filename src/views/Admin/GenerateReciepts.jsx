@@ -7,11 +7,13 @@ import {
 } from '@material-ui/core';
 import React, { useState } from 'react';
 
-export default function GenerateReciepts({ apartments, users }) {
+export default function GenerateReciepts({ apartments, users, services }) {
   const [progress, setProgress] = useState(40);
   const [generating, setGenerating] = useState(false);
   const [water, setWater] = useState();
   const [electricity, setElectricity] = useState();
+
+  console.log(services);
 
   const generate = () => {
     const date = new Date();
@@ -19,6 +21,7 @@ export default function GenerateReciepts({ apartments, users }) {
 
     apartments.forEach((apt) => {
       const { bills, rent, tenant } = apt;
+      const { maintenance, administration, municipality } = services;
       if (!tenant) return;
       const user = users.find((usr) => usr.id === tenant.id);
 
@@ -27,6 +30,9 @@ export default function GenerateReciepts({ apartments, users }) {
         water: (water * Number(bills)) / 100,
         electricity: (electricity * Number(bills)) / 100,
         debt: Number(user.debt) || 0,
+        maintenance,
+        administration,
+        municipality,
       };
 
       if (user.services.indexOf('internet') !== -1) reciept.internet = 50;

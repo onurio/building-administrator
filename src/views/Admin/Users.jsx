@@ -7,8 +7,9 @@ import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
 import UserEdit from './UserEdit';
 import { ModalContext } from './components/SimpleModal';
-import { saveUser, deleteUser } from '../../utils/dbRequests';
+import { saveUser, deleteUser, updateUser } from '../../utils/dbRequests';
 import DeleteModal from './components/DeleteModal';
+import FileUploader from './components/FileUploader';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -27,6 +28,23 @@ const useStyles = makeStyles((theme) => ({
 export default function Users({ storage, auth, users, refresh }) {
   const classes = useStyles();
   const handleModal = useContext(ModalContext);
+
+  const openDownloads = (user) => {
+    handleModal(
+      <FileUploader
+        path={`${user.name.toLowerCase().replace(' ', '_')}_${
+          user.id
+        }/shared_files`}
+        files={user.shared_files}
+        onChange={(files) => {
+          updateUser({ ...user, shared_files: files });
+          refresh();
+        }}
+        title='Shared Files'
+        storage={storage}
+      />
+    );
+  };
 
   const columns = [
     {
@@ -86,12 +104,29 @@ export default function Users({ storage, auth, users, refresh }) {
       width: 150,
     },
     {
+      field: 'shared_files',
+      headerName: 'Shared Files',
+      sortable: false,
+      width: 140,
+      renderCell: (params) => (
+        <Button
+          onClick={() => {
+            openDownloads(params.row);
+          }}
+          variant='outlined'
+          size='small'
+        >
+          {params.value?.length || 0} Files
+        </Button>
+      ),
+    },
+    {
       field: 'reciepts',
       headerName: 'Reciepts',
       sortable: false,
-      width: 120,
+      width: 140,
       renderCell: (params) => (
-        <Button variant='outlined'>{params.value.length} Reciepts</Button>
+        <Button variant='outlined'>{params.value?.length} Reciepts</Button>
       ),
     },
     {
@@ -156,7 +191,7 @@ export default function Users({ storage, auth, users, refresh }) {
           alert(error);
         });
     } else {
-      saveUser(info);
+      updateUser(info);
       handleModal();
       refresh();
     }

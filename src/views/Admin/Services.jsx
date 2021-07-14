@@ -132,7 +132,7 @@ export default function Services({ users }) {
               onChange={handleChange}
             />
           </Grid>
-          <Grid item justify='center' alignItems='center' xs={12}>
+          <Grid item alignItems='center' xs={12}>
             <Button
               onClick={onSaveServices}
               variant='contained'

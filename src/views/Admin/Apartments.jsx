@@ -11,6 +11,7 @@ import {
   saveApartment,
   deleteApartment,
   saveUser,
+  updateUser,
 } from '../../utils/dbRequests';
 import DeleteModal from './components/DeleteModal';
 
@@ -55,6 +56,12 @@ export default function Apartments({ users, apartments, refresh }) {
       headerName: 'Bills',
       width: 100,
       renderCell: (params) => params.value + '%',
+    },
+    {
+      field: 'municipality',
+      headerName: 'Municipality Tax',
+      width: 150,
+      renderCell: (params) => (params.value || 0) + './S',
     },
     {
       field: 'edit',
@@ -107,12 +114,12 @@ export default function Apartments({ users, apartments, refresh }) {
     let apt = { ...info };
 
     if (info.tenant && isEdit) {
-      const user = users.find((usr) => usr.id === info.tenant);
+      const user = users.find((usr) => usr.id === info.tenant.id);
       const updatedUser = {
         ...user,
         apartment: { id: info.id, name: info.name },
       };
-      await saveUser(updatedUser);
+      await updateUser(updatedUser);
       tenant = { name: user.name, id: user.id };
       apt.tenant = tenant;
     }

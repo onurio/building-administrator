@@ -64,6 +64,7 @@ const initialUser = {
   deposit: 0,
   reciepts: [],
   services: [],
+  shared_files: [],
 };
 
 let services = [

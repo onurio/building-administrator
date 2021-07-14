@@ -6,41 +6,23 @@ import { getUserFromEmail } from '../../utils/dbRequests';
 import Dashboard from '../Admin/Dashboard';
 import Laundry from './Laundry';
 import Reciepts from './Reciepts';
-import Settings from './Settings';
+import General from './General';
 import SignIn from './SignIn';
 
-// const userData = {
-//   name: 'Paulo',
-//   email: 'paulo@gmail.com',
-
-//   apt: '1',
-//   reciepts: [
-//     {
-//       id: 'ASDJ24',
-//       name: 'Paulo - Deciembre 2021',
-//       date: '12/12/21',
-//       link: 'https://google.com',
-//     },
-//   ],
-//   services: [],
-//   laundry: {
-//     log: [],
-//   },
-// };
-
 let sideItems = [
+  {
+    key: 'general',
+    text: 'General',
+    link: '/',
+    icon: <SettingsInputComponent />,
+  },
   {
     key: 'reciepts',
     text: 'Recibos',
     link: '/reciepts',
     icon: <SettingsInputComponent />,
   },
-  {
-    key: 'settings',
-    text: 'Ajustes',
-    link: '/settings',
-    icon: <SettingsInputComponent />,
-  },
+
   {
     key: 'laundry',
     text: 'Lavanderia',
@@ -104,6 +86,15 @@ export default function MainView({ auth, children }) {
 
   if (loading && !userData) return <Loader />;
 
+  let enableLaundry = true;
+
+  if (userData) {
+    if (userData.services.indexOf('laundry') === -1) {
+      enableLaundry = false;
+      sideItems = sideItems.filter((item) => item.key !== 'laundry');
+    }
+  }
+
   if (isAuthenticated) {
     return (
       <Dashboard
@@ -113,9 +104,9 @@ export default function MainView({ auth, children }) {
         logout={logout}
       >
         <Router>
+          <General userData={userData} path='/' />
           <Reciepts reciepts={userData.reciepts} path='/reciepts' />
-          <Settings userData={userData} path='/settings' />
-          <Laundry userData={userData} path='/laundry' />
+          {enableLaundry && <Laundry userData={userData} path='/laundry' />}
         </Router>
       </Dashboard>
     );

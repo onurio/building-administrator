@@ -109,7 +109,7 @@ export const sendMessage = async (info) => {
 export const saveApartment = async (apartment) => {
   await withErrorHandling(async () => {
     await db.collection('apartments').doc(apartment.id).set(apartment);
-    customAlert(true, 'Apartment created');
+    customAlert(true, 'Apartment updated');
   });
 };
 
@@ -249,5 +249,12 @@ export const saveUser = async (user) => {
     user.id = ref.id;
     ref.set(user);
     customAlert(true, 'User saved');
+  });
+};
+
+export const updateUser = async (user) => {
+  await withErrorHandling(async () => {
+    await db.collection('users').doc(user.id).update(user);
+    customAlert(true, 'User updated');
   });
 };

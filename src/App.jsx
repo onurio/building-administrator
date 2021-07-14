@@ -56,7 +56,7 @@ function App() {
     <div className='App'>
       <Router>
         <MainView auth={auth.current} path='/*' />
-        <Admin auth={auth.current} path='admin/*' />
+        <Admin auth={auth.current} storage={storage.current} path='admin/*' />
       </Router>
       <Snackbar
         open={snackProps.open}

@@ -6,7 +6,7 @@ import Users from './Users';
 import Apartments from './Apartments';
 import GenerateReciepts from './GenerateReciepts';
 import { Redirect, Router } from '@reach/router';
-import { getApartments, getUsers } from '../../utils/dbRequests';
+import { getApartments, getServices, getUsers } from '../../utils/dbRequests';
 import Services from './Services';
 
 let sideItems = [
@@ -37,10 +37,11 @@ let sideItems = [
   },
 ];
 
-export default function Admin({ auth }) {
+export default function Admin({ auth, storage }) {
   const [isAuthenticaited, setIsAuthenticaited] = useState(false);
   const [apartments, setApartments] = useState([]);
   const [users, setUsers] = useState([]);
+  const [services, setServices] = useState();
 
   const logout = () => {
     auth
@@ -85,6 +86,7 @@ export default function Admin({ auth }) {
     };
     setApartments(addIndexes(await getApartments()));
     setUsers(addIndexes(await getUsers()));
+    setServices(await getServices());
   };
 
   useEffect(() => {
@@ -131,7 +133,13 @@ export default function Admin({ auth }) {
         <Router>
           <Redirect noThrow={true} from='/' to='services' />
           <Services users={users} path='/services' />
-          <Users users={users} refresh={refresh} path='/users' auth={auth} />
+          <Users
+            users={users}
+            refresh={refresh}
+            path='/users'
+            auth={auth}
+            storage={storage}
+          />
           <Apartments
             apartments={apartments}
             users={users}
@@ -141,6 +149,7 @@ export default function Admin({ auth }) {
           <GenerateReciepts
             apartments={apartments}
             users={users}
+            services={services}
             refresh={refresh}
             path='/generate-reciepts'
           />
