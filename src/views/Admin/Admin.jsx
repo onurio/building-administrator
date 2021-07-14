@@ -8,7 +8,9 @@ import GenerateReciepts from './GenerateReciepts';
 import { Redirect, Router } from '@reach/router';
 import { getApartments, getServices, getUsers } from '../../utils/dbRequests';
 import Services from './Services';
-
+import PeopleIcon from '@material-ui/icons/People';
+import ApartmentIcon from '@material-ui/icons/Apartment';
+import ReceiptIcon from '@material-ui/icons/Receipt';
 let sideItems = [
   {
     key: 'services',
@@ -20,20 +22,20 @@ let sideItems = [
     key: 'users',
     text: 'Users',
     link: 'users',
-    icon: <SettingsIcon />,
+    icon: <PeopleIcon />,
   },
   {
     key: 'apartments',
     text: 'Apartments',
     link: 'apartments',
-    icon: <SettingsIcon />,
+    icon: <ApartmentIcon />,
   },
 
   {
     key: 'generate_recieptes',
     text: 'Generate Reciepts',
     link: 'generate-reciepts',
-    icon: <SettingsIcon />,
+    icon: <ReceiptIcon />,
   },
 ];
 
@@ -149,6 +151,7 @@ export default function Admin({ auth, storage }) {
           <GenerateReciepts
             apartments={apartments}
             users={users}
+            storage={storage}
             services={services}
             refresh={refresh}
             path='/generate-reciepts'

@@ -2,7 +2,6 @@
 import { Button, IconButton, makeStyles, Typography } from '@material-ui/core';
 import React, { useContext } from 'react';
 import DataTable from './components/DataTable';
-import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
 import ApartmentEdit from './ApartmentEdit';
@@ -10,10 +9,10 @@ import { ModalContext } from './components/SimpleModal';
 import {
   saveApartment,
   deleteApartment,
-  saveUser,
   updateUser,
 } from '../../utils/dbRequests';
 import DeleteModal from './components/DeleteModal';
+import ApartmentIcon from '@material-ui/icons/Apartment';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -52,9 +51,15 @@ export default function Apartments({ users, apartments, refresh }) {
       renderCell: (params) => params.value + './S',
     },
     {
-      field: 'bills',
-      headerName: 'Bills',
-      width: 100,
+      field: 'electricity_percentage',
+      headerName: 'Electricity &',
+      width: 140,
+      renderCell: (params) => params.value + '%',
+    },
+    {
+      field: 'water_percentage',
+      headerName: 'Water &',
+      width: 140,
       renderCell: (params) => params.value + '%',
     },
     {
@@ -113,7 +118,7 @@ export default function Apartments({ users, apartments, refresh }) {
     let tenant;
     let apt = { ...info };
 
-    if (info.tenant && isEdit) {
+    if (info.tenant?.id && isEdit) {
       const user = users.find((usr) => usr.id === info.tenant.id);
       const updatedUser = {
         ...user,
@@ -152,7 +157,7 @@ export default function Apartments({ users, apartments, refresh }) {
         <Button
           onClick={() => openAdd()}
           className={classes.button}
-          startIcon={<PersonAddIcon />}
+          startIcon={<ApartmentIcon />}
           variant='outlined'
         >
           Add Apartment{' '}

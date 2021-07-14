@@ -50,7 +50,7 @@ export default function SharedFiles({ sharedFiles = [] }) {
   return (
     <div className={classes.root}>
       <Typography style={{ marginBottom: 20 }} variant='h5'>
-        Shared Files
+        Archivos compartidos
       </Typography>
       <div>
         <DataTable

@@ -19,7 +19,8 @@ import {
   reserveLaundryDay,
   saveLaundryUse,
 } from '../../utils/dbRequests';
-import { getMonthYear } from '../../utils/util';
+import { calculateLaundryUsage, getMonthYear } from '../../utils/util';
+import Loader from '../../components/Loader';
 
 const monthYear = getMonthYear(new Date());
 
@@ -83,34 +84,42 @@ export default function Laundry({ userData }) {
   const [disabledDates, setDisabledDates] = useState([]);
   const [userReservations, setUserReservations] = useState();
   const [closestReservation, setClosestReservation] = useState();
+  const [userMonthlyUsage, setUserMonthlyUsage] = useState();
   const [washDry, setWashDry] = useState({ ...initialWashDry });
+  const [loading, setLoading] = useState(true);
   const classes = useStyles();
 
   const refresh = async () => {
-    getReservedDates(monthYear).then(setDisabledDates);
-    getLaundryUser(userData.id).then((laundryUser) => {
-      let closest;
-      let monthReserves = laundryUser.reservations[monthYear];
+    setDisabledDates(await getReservedDates(monthYear));
+    const laundryUser = await getLaundryUser(userData.id);
+    let closest;
+    let monthReserves = laundryUser.reservations[monthYear];
 
-      if (!monthReserves.length) {
-        setClosestReservation();
-        return [];
-      }
-      monthReserves = monthReserves.sort();
+    const usage = calculateLaundryUsage(laundryUser, monthYear);
+    setUserMonthlyUsage(usage);
 
-      let today = new Date().toLocaleDateString();
-      monthReserves.every(function (reserve) {
-        if (today <= reserve) {
-          closest = reserve;
-          return false;
-        } else return true;
-      });
+    if (!monthReserves.length) {
+      setClosestReservation();
+      setLoading(false);
 
-      closest =
-        new Date(closest).toLocaleDateString() >= today ? closest : undefined;
-      setClosestReservation(closest);
-      setUserReservations(laundryUser.reservations[monthYear]);
+      return [];
+    }
+    monthReserves = monthReserves.sort();
+
+    let today = new Date().toLocaleDateString();
+    monthReserves.every(function (reserve) {
+      if (today <= reserve) {
+        closest = reserve;
+        return false;
+      } else return true;
     });
+
+    closest =
+      new Date(closest).toLocaleDateString() >= today ? closest : undefined;
+    setClosestReservation(closest);
+    setUserReservations(laundryUser.reservations[monthYear]);
+
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -160,9 +169,13 @@ export default function Laundry({ userData }) {
     }, 500);
   };
 
+  if (loading) return <Loader />;
+
   return (
     <div>
-      <Typography variant='h3'>Lavanderia</Typography>
+      <Typography style={{ marginTop: 20 }} variant='h3'>
+        Lavanderia
+      </Typography>
 
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
         <Paper className={classes.root}>
@@ -260,6 +273,34 @@ export default function Laundry({ userData }) {
             >
               Guardar uso
             </Button>
+          </Paper>
+          <Paper className={classes.useContainer}>
+            <h2>Uso de: {format(new Date(), 'MMM - yyyy')}</h2>
+            {userMonthlyUsage ? (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  marginTop: 10,
+                }}
+              >
+                <div>
+                  Lavadas: {userMonthlyUsage.wash} -{' '}
+                  {userMonthlyUsage.washTotal}./S
+                </div>
+                <div>
+                  Secadas: {userMonthlyUsage.dry} - {userMonthlyUsage.dryTotal}
+                  ./S
+                </div>
+                <div>
+                  <b>Total: {userMonthlyUsage.total}./S</b>
+                </div>
+              </div>
+            ) : (
+              <h4 style={{ padding: 20 }}>No has usado este mes</h4>
+            )}
           </Paper>
         </Paper>
       </MuiPickersUtilsProvider>

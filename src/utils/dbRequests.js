@@ -127,6 +127,16 @@ export const getUserFromEmail = async (email) => {
   });
 };
 
+export const getApartmentFromUserId = async (userId) => {
+  return await withErrorHandling(async () => {
+    const res = await db
+      .collection('apartments')
+      .where('tenant.id', '==', userId)
+      .get();
+    return res.docs[0].data();
+  });
+};
+
 export const deleteUser = async (userId) => {
   await withErrorHandling(async () => {
     await db.collection('users').doc(userId).delete();

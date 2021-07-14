@@ -39,8 +39,10 @@ export default function Services({ users }) {
   const [laundry, setLaundry] = useState();
 
   const refresh = async () => {
-    setServices(await getServices());
-    setLaundry(await getLaundry(users));
+    const fetchedServices = await getServices();
+    const fetchedLaundry = await getLaundry(users);
+    setServices(fetchedServices);
+    setLaundry(fetchedLaundry);
   };
   useEffect(() => {
     if (users) {
@@ -118,17 +120,6 @@ export default function Services({ users }) {
               label='Cable price'
               value={services.cable}
               name='cable'
-              onChange={handleChange}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              className={classes.input}
-              variant='outlined'
-              type='number'
-              label='Municipality price'
-              value={services.municipality}
-              name='municipality'
               onChange={handleChange}
             />
           </Grid>

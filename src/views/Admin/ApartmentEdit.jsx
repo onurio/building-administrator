@@ -35,7 +35,8 @@ const useStyles = makeStyles((theme) => ({
 
 const initialApartment = {
   name: '',
-  bills: 0,
+  electricity_percentage: 0,
+  water_percentage: 0,
   rent: 0,
   municipality: 0,
 };
@@ -94,9 +95,20 @@ export default function ApartmentEdit({
           className={classes.input}
           variant='outlined'
           type='number'
-          label='Bills'
-          value={apartmentInfo.bills}
-          name='bills'
+          label='Electricity %'
+          value={apartmentInfo.electricity_percentage}
+          name='electricity_percentage'
+          onChange={handleChange}
+        />
+      </Grid>
+      <Grid item xs={4}>
+        <TextField
+          className={classes.input}
+          variant='outlined'
+          type='number'
+          label='Water %'
+          value={apartmentInfo.water_percentage}
+          name='water_percentage'
           onChange={handleChange}
         />
       </Grid>
@@ -119,11 +131,25 @@ export default function ApartmentEdit({
               labelId='tenant'
               id='tenant'
               onChange={(e) => {
-                setApartmentInfo((s) => ({ ...s, tenant: e.target.value }));
+                let tenant;
+                if (e.target.value) {
+                  tenant = users.find((usr) => usr.id === e.target.value);
+                  tenant = { name: tenant.name, id: tenant.id };
+                } else {
+                  tenant = {};
+                }
+
+                setApartmentInfo((s) => ({
+                  ...s,
+                  tenant,
+                }));
               }}
               variant='outlined'
               value={apartmentInfo.tenant?.id || ''}
             >
+              <MenuItem key={'not assigned'} value={undefined}>
+                None
+              </MenuItem>
               {userLabels.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}

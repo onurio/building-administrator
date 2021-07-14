@@ -10,6 +10,7 @@ import { ModalContext } from './components/SimpleModal';
 import { saveUser, deleteUser, updateUser } from '../../utils/dbRequests';
 import DeleteModal from './components/DeleteModal';
 import FileUploader from './components/FileUploader';
+import Reciepts from '../MainView/Reciepts';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -43,6 +44,14 @@ export default function Users({ storage, auth, users, refresh }) {
         title='Shared Files'
         storage={storage}
       />
+    );
+  };
+
+  const openRecieptsModal = (reciepts) => {
+    handleModal(
+      <div style={{ width: 570, maxWidth: '80vw', height: 660 }}>
+        <Reciepts reciepts={reciepts} />
+      </div>
     );
   };
 
@@ -126,7 +135,12 @@ export default function Users({ storage, auth, users, refresh }) {
       sortable: false,
       width: 140,
       renderCell: (params) => (
-        <Button variant='outlined'>{params.value?.length} Reciepts</Button>
+        <Button
+          onClick={() => openRecieptsModal(params.value || [])}
+          variant='outlined'
+        >
+          {params.value?.length} Reciepts
+        </Button>
       ),
     },
     {

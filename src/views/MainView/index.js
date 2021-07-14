@@ -1,4 +1,3 @@
-import { SettingsInputComponent } from '@material-ui/icons';
 import { Router } from '@reach/router';
 import React, { useEffect, useState } from 'react';
 import Loader from '../../components/Loader';
@@ -8,26 +7,29 @@ import Laundry from './Laundry';
 import Reciepts from './Reciepts';
 import General from './General';
 import SignIn from './SignIn';
+import LocalLaundryServiceIcon from '@material-ui/icons/LocalLaundryService';
+import PersonIcon from '@material-ui/icons/Person';
+import ReceiptIcon from '@material-ui/icons/Receipt';
 
 let sideItems = [
   {
     key: 'general',
     text: 'General',
     link: '/',
-    icon: <SettingsInputComponent />,
+    icon: <PersonIcon />,
   },
   {
     key: 'reciepts',
     text: 'Recibos',
     link: '/reciepts',
-    icon: <SettingsInputComponent />,
+    icon: <ReceiptIcon />,
   },
 
   {
     key: 'laundry',
     text: 'Lavanderia',
     link: '/laundry',
-    icon: <SettingsInputComponent />,
+    icon: <LocalLaundryServiceIcon />,
   },
 ];
 
@@ -70,9 +72,10 @@ export default function MainView({ auth, children }) {
         if (user) {
           getUserFromEmail(user.email).then((data) => {
             setUserData(data);
+            setIsAuthenticaited(true);
+            setLoading(false);
           });
         }
-        setLoading(false);
       });
     }
   }, [auth]);
@@ -99,13 +102,19 @@ export default function MainView({ auth, children }) {
     return (
       <Dashboard
         sideItems={sideItems}
-        title={`Edificio Juan del Carpio Dashboard - ${userData.name} (${userData.apt})`}
+        title={`Edificio Juan del Carpio Dashboard - ${userData.name} (${
+          userData.apt || 'Sin departamento'
+        })`}
         path='/*'
         logout={logout}
       >
         <Router>
           <General userData={userData} path='/' />
-          <Reciepts reciepts={userData.reciepts} path='/reciepts' />
+          <Reciepts
+            userData={userData}
+            reciepts={userData.reciepts}
+            path='/reciepts'
+          />
           {enableLaundry && <Laundry userData={userData} path='/laundry' />}
         </Router>
       </Dashboard>

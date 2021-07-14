@@ -5,7 +5,6 @@ import { ModalContext } from '../Admin/components/SimpleModal';
 import GenerateReciepts from '../Admin/GenerateReciepts';
 import { jsPDF } from 'jspdf';
 import { useEffect } from 'react';
-import PDFObject from 'pdfobject';
 import SharedFiles from './SharedFiles';
 
 const useStyles = makeStyles((theme) => ({
@@ -24,7 +23,8 @@ const useStyles = makeStyles((theme) => ({
       marginTop: 20,
       padding: 10,
     },
-    margin: 20,
+    marginRight: 20,
+    marginTop: 50,
     padding: 20,
   },
   container: {
@@ -39,12 +39,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// const doc = new jsPDF();
-
-// doc.text('Hello world!', 10, 10);
-
-// let data = doc.output('datauristring');
-
 const fields = [
   {
     label: 'Nombre',
@@ -56,12 +50,25 @@ const fields = [
   },
 
   {
+    label: 'DNI/RUC',
+    field: 'dni_ruc',
+  },
+
+  {
     label: 'Telofono',
     field: 'tel',
   },
   {
     label: 'Telefono Emergencia',
     field: 'tel_emergency',
+  },
+  {
+    label: 'Inicio de conracto',
+    field: 'contract_start',
+  },
+  {
+    label: 'Fin de conracto',
+    field: 'contract_end',
   },
 ];
 
@@ -75,7 +82,9 @@ export default function General({ userData }) {
   }, []);
   return (
     <>
-      <Typography variant='h4'>General</Typography>
+      <Typography style={{ marginTop: 20 }} variant='h3'>
+        General
+      </Typography>
 
       <div className={classes.root}>
         <Paper className={classes.paper}>
@@ -98,13 +107,17 @@ export default function General({ userData }) {
             <Grid className={classes.item} xs={6}>
               {userData.apartment.name}
             </Grid>
+            <Grid className={classes.item} xs={6}>
+              Servicios:
+            </Grid>
+            <Grid className={classes.item} xs={6}>
+              {userData.services.toString()}
+            </Grid>
           </Grid>
         </Paper>
         <Paper className={classes.paper}>
           <SharedFiles sharedFiles={userData.shared_files} />
         </Paper>
-
-        {/* <div style={{ width: 400, height: 600 }} id='pdf-preview' /> */}
       </div>
     </>
   );
