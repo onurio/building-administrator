@@ -44,6 +44,7 @@ export default function MainView({ auth, children }) {
       .then(function () {
         // Sign-out successful.
         setIsAuthenticaited(false);
+        setLoading(false);
       })
       .catch(function (error) {
         // An error happened.
@@ -52,13 +53,17 @@ export default function MainView({ auth, children }) {
   };
 
   const login = (email, password) => {
+    setLoading(true);
     auth
       .signInWithEmailAndPassword(email, password)
       .then(() => {
-        setIsAuthenticaited(true);
+        // console.log(usr);
+        // setIsAuthenticaited(true);
         // localStorage.setItem('jdcEmail',email);
       })
       .catch(function (error) {
+        setLoading(false);
+
         // Handle Errors here.
         // var errorCode = error.code;
         // var errorMessage = error.message;
@@ -75,6 +80,8 @@ export default function MainView({ auth, children }) {
             setIsAuthenticaited(true);
             setLoading(false);
           });
+        } else {
+          setLoading(false);
         }
       });
     }
@@ -87,7 +94,7 @@ export default function MainView({ auth, children }) {
     }
   };
 
-  if (loading && !userData) return <Loader />;
+  if (loading) return <Loader />;
 
   let enableLaundry = true;
 
@@ -98,7 +105,7 @@ export default function MainView({ auth, children }) {
     }
   }
 
-  if (isAuthenticated) {
+  if (isAuthenticated && userData) {
     return (
       <Dashboard
         sideItems={sideItems}

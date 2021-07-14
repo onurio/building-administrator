@@ -51,6 +51,8 @@ const MenuProps = {
   },
 };
 
+const today = new Date().toISOString();
+
 const initialUser = {
   name: '',
   email: '',
@@ -58,8 +60,8 @@ const initialUser = {
   telEmergency: '',
   deposito: '',
   dni_ruc: '',
-  contract_start: '',
-  contract_end: '',
+  contract_start: today,
+  contract_end: today,
   debt: 0,
   deposit: 0,
   reciepts: [],
@@ -86,7 +88,7 @@ export default function UserEdit({ user, apartments = [], onCancel, onSave }) {
 
   const handleDate = (date, type) => {
     handleChange({
-      target: { name: type, value: new Date(date).toLocaleDateString() },
+      target: { name: type, value: new Date(date).toISOString() },
     });
   };
 
@@ -133,13 +135,13 @@ export default function UserEdit({ user, apartments = [], onCancel, onSave }) {
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
         <Grid item xs={6}>
           <KeyboardDatePicker
-            value={userInfo.contract_start}
+            value={new Date(userInfo.contract_start)}
             className={classes.input}
             onChange={(val) => handleDate(val, 'contract_start')}
             label='Contract start'
           />
           <KeyboardDatePicker
-            value={userInfo.contract_end}
+            value={new Date(userInfo.contract_end)}
             className={classes.input}
             label='Contract end'
             onChange={(val) => handleDate(val, 'contract_end')}

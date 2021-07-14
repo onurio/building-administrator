@@ -1,10 +1,6 @@
-import { Button, Grid, makeStyles, Paper, Typography } from '@material-ui/core';
-import React, { useContext } from 'react';
-import ResetModal from '../Admin/components/ResetModal';
-import { ModalContext } from '../Admin/components/SimpleModal';
-import GenerateReciepts from '../Admin/GenerateReciepts';
-import { jsPDF } from 'jspdf';
-import { useEffect } from 'react';
+import { Grid, makeStyles, Paper, Typography } from '@material-ui/core';
+import React from 'react';
+
 import SharedFiles from './SharedFiles';
 
 const useStyles = makeStyles((theme) => ({
@@ -73,13 +69,8 @@ const fields = [
 ];
 
 export default function General({ userData }) {
-  const handleModal = useContext(ModalContext);
   const classes = useStyles();
 
-  console.log(userData);
-  useEffect(() => {
-    // PDFObject.embed(data, '#pdf-preview', {});
-  }, []);
   return (
     <>
       <Typography style={{ marginTop: 20 }} variant='h3'>

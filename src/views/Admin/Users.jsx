@@ -106,11 +106,13 @@ export default function Users({ storage, auth, users, refresh }) {
       field: 'contract_start',
       headerName: 'Contract End',
       width: 150,
+      renderCell: (params) => new Date(params.value).toLocaleDateString(),
     },
     {
       field: 'contract_end',
       headerName: 'Contract Start',
       width: 150,
+      renderCell: (params) => new Date(params.value).toLocaleDateString(),
     },
     {
       field: 'shared_files',
