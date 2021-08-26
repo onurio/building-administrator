@@ -4,7 +4,7 @@ import Loader from '../../components/Loader';
 import { getUserFromEmail } from '../../utils/dbRequests';
 import Dashboard from '../Admin/Dashboard';
 import Laundry from './Laundry';
-import Reciepts from './Reciepts';
+import ListReciepts from './ListReciepts';
 import General from './General';
 import SignIn from './SignIn';
 import LocalLaundryServiceIcon from '@material-ui/icons/LocalLaundryService';
@@ -94,7 +94,20 @@ export default function MainView({ auth, children }) {
     }
   };
 
-  if (loading) return <Loader />;
+  if (loading)
+    return (
+      <div
+        style={{
+          width: '100vw',
+          height: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <Loader />
+      </div>
+    );
 
   let enableLaundry = true;
 
@@ -110,14 +123,14 @@ export default function MainView({ auth, children }) {
       <Dashboard
         sideItems={sideItems}
         title={`Edificio Juan del Carpio Dashboard - ${userData.name} (${
-          userData.apt || 'Sin departamento'
+          userData.apartment?.name || 'Sin departamento'
         })`}
         path='/*'
         logout={logout}
       >
         <Router>
           <General userData={userData} path='/' />
-          <Reciepts
+          <ListReciepts
             userData={userData}
             reciepts={userData.reciepts}
             path='/reciepts'

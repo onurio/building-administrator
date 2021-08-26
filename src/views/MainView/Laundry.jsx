@@ -19,8 +19,14 @@ import {
   reserveLaundryDay,
   saveLaundryUse,
 } from '../../utils/dbRequests';
-import { calculateLaundryUsage, getMonthYear } from '../../utils/util';
+import {
+  calculateLaundryUsage,
+  dateToLocalString,
+  getMonthYear,
+} from '../../utils/util';
 import Loader from '../../components/Loader';
+import { useContext } from 'react';
+import { ModalContext } from '../Admin/components/SimpleModal';
 
 const monthYear = getMonthYear(new Date());
 
@@ -33,6 +39,9 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.down('sm')]: {
       width: '100%',
       maxWidth: '100vw',
+      padding: 0,
+      paddingTop: 20,
+      paddingBottom: 20,
     },
     backgroundColor: 'cadetblue',
   },
@@ -41,19 +50,23 @@ const useStyles = makeStyles((theme) => ({
     width: 360,
     [theme.breakpoints.down('sm')]: {
       width: '100%',
+      padding: 0,
+      paddingTop: 20,
+      paddingBottom: 20,
     },
     padding: 20,
   },
   reservedNotice: {
-    height: '100%',
+    height: 200,
     width: '100%',
     top: 0,
     left: 0,
+    marginBottom: 20,
     zIndex: 1000,
     backgroundColor: 'rgba(255,255,255,0.8)',
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'absolute',
+    // position: 'absolute',
     display: 'flex',
     flexDirection: 'column',
   },
@@ -80,6 +93,7 @@ const useStyles = makeStyles((theme) => ({
 const initialWashDry = { wash: 0, dry: 0 };
 
 export default function Laundry({ userData }) {
+  const handleModal = useContext(ModalContext);
   const [selectedDate, handleDateSelect] = useState();
   const [disabledDates, setDisabledDates] = useState([]);
   const [userReservations, setUserReservations] = useState();
@@ -93,12 +107,12 @@ export default function Laundry({ userData }) {
     setDisabledDates(await getReservedDates(monthYear));
     const laundryUser = await getLaundryUser(userData.id);
     let closest;
-    let monthReserves = laundryUser.reservations[monthYear];
+    let monthReserves = laundryUser?.reservations?.[monthYear] || [];
 
     const usage = calculateLaundryUsage(laundryUser, monthYear);
     setUserMonthlyUsage(usage);
 
-    if (!monthReserves.length) {
+    if (!monthReserves?.length) {
       setClosestReservation();
       setLoading(false);
 
@@ -106,18 +120,25 @@ export default function Laundry({ userData }) {
     }
     monthReserves = monthReserves.sort();
 
-    let today = new Date().toLocaleDateString();
-    monthReserves.every(function (reserve) {
-      if (today <= reserve) {
+    console.log(monthReserves);
+    let today = new Date();
+
+    monthReserves.every((reserve) => {
+      console.log(new Date(reserve));
+
+      if (new Date(reserve) >= today) {
         closest = reserve;
         return false;
-      } else return true;
+      }
+      return true;
     });
 
-    closest =
-      new Date(closest).toLocaleDateString() >= today ? closest : undefined;
+    console.log(closest);
+
+    closest = new Date(closest).getTime() >= today ? closest : undefined;
+
     setClosestReservation(closest);
-    setUserReservations(laundryUser.reservations[monthYear]);
+    setUserReservations(monthReserves);
 
     setLoading(false);
   };
@@ -127,9 +148,11 @@ export default function Laundry({ userData }) {
   }, []);
 
   const reserve = async () => {
+    handleModal(<Loader />, { hideExit: true });
     await reserveLaundryDay(userData.id, userData.name, selectedDate);
     setTimeout(() => {
       refresh();
+      handleModal();
     }, 500);
 
     handleDateSelect(undefined);
@@ -145,6 +168,7 @@ export default function Laundry({ userData }) {
   };
 
   const onDeleteReservation = async () => {
+    handleModal(<Loader />, { hideExit: true });
     await deleteReservation(
       userData.id,
       monthYear,
@@ -154,6 +178,7 @@ export default function Laundry({ userData }) {
     );
     setTimeout(() => {
       refresh();
+      handleModal();
     }, 500);
   };
 
@@ -162,10 +187,12 @@ export default function Laundry({ userData }) {
   };
 
   const onSaveLaundryUse = async () => {
+    handleModal(<Loader />, { hideExit: true });
     await saveLaundryUse(washDry, userData.id, monthYear);
     setWashDry({ ...initialWashDry });
     setTimeout(() => {
       refresh();
+      handleModal();
     }, 500);
   };
 
@@ -184,7 +211,9 @@ export default function Laundry({ userData }) {
 
             {closestReservation && (
               <Paper className={classes.reservedNotice}>
-                <h2>Proxima cita: {closestReservation}</h2>
+                <h2>
+                  Proxima cita: {new Date(closestReservation).toDateString()}
+                </h2>
                 <Button
                   style={{ marginTop: 20 }}
                   onClick={onDeleteReservation}
@@ -209,15 +238,16 @@ export default function Laundry({ userData }) {
               margin='normal'
               id='date-picker-dialog'
               label='Date picker dialog'
-              format='MM/dd/yyyy'
               variant='static'
               value={selectedDate}
               onChange={handleDateSelect}
               disablePast={true}
               shouldDisableDate={(day) => {
-                const compareDate = new Date(day).toLocaleDateString();
+                const compareDate = dateToLocalString(day);
                 const isFree = disabledDates.every((disDate) => {
-                  return disDate.date !== compareDate;
+                  return (
+                    dateToLocalString(new Date(disDate.date)) !== compareDate
+                  );
                 });
                 return !isFree;
               }}
@@ -268,7 +298,7 @@ export default function Laundry({ userData }) {
               style={{ marginTop: 20 }}
               onClick={onSaveLaundryUse}
               color='primary'
-              disabled={washDry.dry <= 0 && washDry.wash <= 0}
+              disabled={washDry.dry < 0 && washDry.wash < 0}
               variant='contained'
             >
               Guardar uso

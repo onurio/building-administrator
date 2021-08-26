@@ -2,7 +2,14 @@ import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 
 export const getMonthYear = (dateObj) => {
-  return dateObj.getMonth() + '_' + dateObj.getFullYear();
+  return format(dateObj, 'MM_yyyy');
+};
+
+export const dateToLocalString = (dateObj) => {
+  if (!dateObj.getTime()) {
+    return '';
+  }
+  return format(dateObj, 'dd/MM/yyyy');
 };
 
 export const generateRecieptInfo = (
@@ -26,11 +33,9 @@ export const generateRecieptInfo = (
   const reciept = {
     rent: Number(rent),
     debt: Number(user.debt) || 0,
-    maintenance,
-    administration,
+    maintenance: Math.round(maintenance),
+    administration: Math.round(administration),
     municipality: Math.round(Number(municipality)),
-    name: user.name,
-    apartment: apt.name,
   };
 
   reciept.water = water
@@ -43,12 +48,24 @@ export const generateRecieptInfo = (
   if (user.services.indexOf('internet') !== -1) reciept.internet = 50;
   if (user.services.indexOf('cable') !== -1) reciept.cable = 50;
   if (laundryUsage) reciept.laundryTotal = laundryUsage.total;
+
+  let total = 0;
+
+  Object.keys(reciept).forEach((key) => {
+    total += Math.round(reciept[key]);
+  });
+
+  reciept.total = total;
+  reciept.subTotal = total - rent;
+  reciept.name = user.name;
+  reciept.apartment = apt.name;
+
   return reciept;
 };
 
 export const calculateLaundryUsage = (laundryUser, monthYear) => {
   let usage;
-  const useLog = laundryUser?.use[monthYear];
+  const useLog = laundryUser?.use?.[monthYear];
 
   if (useLog) {
     usage = useLog.reduce((accum, current) => ({
@@ -70,6 +87,7 @@ const fieldMapper = {
   municipality: 'Arbitrios',
   water: 'Agua',
   electricity: 'Luz',
+  cable: 'Cable',
   internet: 'Internet',
   laundryTotal: 'Lavanderia',
 };
@@ -96,7 +114,7 @@ export const createPdfInvoice = (reciept, date = new Date()) => {
 
   doc.setFontSize(14);
 
-  doc.text(`Recibo para: ${format(date, 'MMM,yyyy')}`, 140, 40);
+  doc.text(`Mes y año de emision: ${format(date, 'MMM,yyyy')}`, 140, 40);
 
   doc.text(
     [
@@ -128,12 +146,9 @@ export const createPdfInvoice = (reciept, date = new Date()) => {
 
   const headers = createHeaders(['DESCRIPCION', 'PRECIO']);
 
-  let total = 0;
   let tableData = fields.map((key) => {
     const value = reciept[key];
     if (value !== undefined) {
-      total += Number(value) || 0;
-
       return {
         DESCRIPCION: fieldMapper?.[key] || 'UNDEFINED',
         PRECIO: String(value) + './S',
@@ -146,12 +161,12 @@ export const createPdfInvoice = (reciept, date = new Date()) => {
 
   tableData.push({
     DESCRIPCION: '',
-    PRECIO: `Subtotal: ` + (total - Number(reciept.rent)) + './S',
+    PRECIO: `Subtotal: ` + reciept.subTotal + './S',
   });
 
   tableData.push({
     DESCRIPCION: '',
-    PRECIO: `Total: ` + total + './S',
+    PRECIO: `Total: ` + reciept.total + './S',
   });
 
   doc.table(20, 70, tableData, headers, {

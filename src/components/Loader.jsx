@@ -4,7 +4,6 @@ const Loader = () => (
   <div
     style={{
       height: '100%',
-      minHeight: '85vh',
       width: '100%',
       display: 'flex',
       justifyContent: 'center',

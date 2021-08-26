@@ -11,6 +11,7 @@ import {
   TextField,
   Typography,
 } from '@material-ui/core';
+import SimpleCheckBox from './components/SimpleCheckBox';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -39,6 +40,7 @@ const initialApartment = {
   water_percentage: 0,
   rent: 0,
   municipality: 0,
+  is_garage: false,
 };
 
 export default function ApartmentEdit({
@@ -121,6 +123,16 @@ export default function ApartmentEdit({
           value={apartmentInfo.municipality}
           name='municipality'
           onChange={handleChange}
+        />
+      </Grid>
+      <Grid item xs={4}>
+        <SimpleCheckBox
+          editable
+          defaultChecked={apartmentInfo.is_garage}
+          onChange={(val) => {
+            setApartmentInfo((s) => ({ ...s, is_garage: val }));
+          }}
+          label={'Is Garage?'}
         />
       </Grid>
       {isEdit && (

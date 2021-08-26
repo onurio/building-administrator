@@ -8,11 +8,21 @@ import {
 } from '@material-ui/core';
 import format from 'date-fns/format';
 import React, { useState } from 'react';
+import { useEffect } from 'react';
+import Loader from '../../components/Loader';
+import { getLaundry } from '../../utils/dbRequests';
 import { getMonthYear } from '../../utils/util';
 import DataTable from './components/DataTable';
 
-export default function LaundryUseView({ laundry }) {
+export default function LaundryUseView({ users }) {
   const [monthYear, setMonthYear] = useState(getMonthYear(new Date()));
+  const [laundry, setLaundry] = useState();
+
+  useEffect(() => {
+    getLaundry(users).then(setLaundry);
+  }, []);
+
+  if (!laundry) return <Loader />;
 
   const columns = [
     {
@@ -69,7 +79,7 @@ export default function LaundryUseView({ laundry }) {
         </FormControl>
       </div>
 
-      <DataTable columns={columns} rows={laundry.log[monthYear]} />
+      <DataTable columns={columns} rows={laundry.log[monthYear] || []} />
     </Paper>
   );
 }

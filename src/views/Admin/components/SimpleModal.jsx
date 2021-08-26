@@ -5,6 +5,7 @@ import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
 import { IconButton } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
+
 const useStyles = makeStyles((theme) => ({
   modal: {
     display: 'flex',
@@ -35,10 +36,12 @@ export default function SimpleModal({ children, className }) {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState(null);
+  const [options, setOptions] = useState({});
 
-  const handleModal = (comp) => {
+  const handleModal = (comp, newOptions = {}) => {
     if (comp) {
       setOpen(true);
+      setOptions(newOptions);
       setContent(comp);
     } else {
       setOpen(false);
@@ -51,12 +54,14 @@ export default function SimpleModal({ children, className }) {
         {children}
       </ModalContext.Provider>
       <Modal
-        aria-labelledby="transition-modal-title"
-        aria-describedby="transition-modal-description"
+        aria-labelledby='transition-modal-title'
+        aria-describedby='transition-modal-description'
         className={`${classes.modal} modal ${className}`}
         open={open}
         closeAfterTransition
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          if (!options.hideExit) setOpen(false);
+        }}
         BackdropComponent={Backdrop}
         BackdropProps={{
           timeout: 500,
@@ -64,9 +69,14 @@ export default function SimpleModal({ children, className }) {
       >
         <Fade in={open}>
           <div className={classes.paper}>
-            <IconButton onClick={() => handleModal()} className={classes.close}>
-              <CloseIcon />
-            </IconButton>
+            {!options.hideExit && (
+              <IconButton
+                onClick={() => handleModal()}
+                className={classes.close}
+              >
+                <CloseIcon />
+              </IconButton>
+            )}
             {content}
           </div>
         </Fade>

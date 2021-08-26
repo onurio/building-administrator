@@ -12,12 +12,14 @@ import ChipsArray from './components/ChipArray';
 import PropTypes from 'prop-types';
 import {
   getLaundry,
+  getMonthlyReports,
   getServices,
   updateCategories,
   updateServices,
 } from '../../utils/dbRequests';
 import Loader from '../../components/Loader';
 import LaundryUseView from './LaundryUseView';
+import MonthlyReports from './MonthlyReports';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -28,6 +30,12 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     margin: 10,
   },
+  tables: {
+    display: 'flex',
+    flexDirection: 'column',
+    margin: '0 20px',
+    width: '100%',
+  },
   title: {
     marginBottom: 15,
   },
@@ -36,13 +44,10 @@ const useStyles = makeStyles((theme) => ({
 export default function Services({ users }) {
   const classes = useStyles();
   const [services, setServices] = useState();
-  const [laundry, setLaundry] = useState();
 
   const refresh = async () => {
     const fetchedServices = await getServices();
-    const fetchedLaundry = await getLaundry(users);
     setServices(fetchedServices);
-    setLaundry(fetchedLaundry);
   };
   useEffect(() => {
     if (users) {
@@ -61,11 +66,13 @@ export default function Services({ users }) {
     }, 500);
   };
 
-  if (!services || !laundry) return <Loader />;
+  if (!services) return <Loader />;
 
   return (
     <div className={classes.root}>
-      <LaundryUseView laundry={laundry} />
+      <div className={classes.tables}>
+        <MonthlyReports />
+      </div>
 
       <Paper
         style={{

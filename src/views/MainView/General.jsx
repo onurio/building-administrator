@@ -58,14 +58,14 @@ const fields = [
     label: 'Telefono Emergencia',
     field: 'tel_emergency',
   },
-  {
-    label: 'Inicio de conracto',
-    field: 'contract_start',
-  },
-  {
-    label: 'Fin de conracto',
-    field: 'contract_end',
-  },
+  // {
+  //   label: 'Inicio de conracto',
+  //   field: 'contract_start',
+  // },
+  // {
+  //   label: 'Fin de conracto',
+  //   field: 'contract_end',
+  // },
 ];
 
 export default function General({ userData }) {

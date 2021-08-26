@@ -2,33 +2,42 @@ import DateFnsUtils from '@date-io/date-fns/build/index.esm';
 import {
   Button,
   Grid,
-  LinearProgress,
   Paper,
   TextField,
+  LinearProgress,
   Typography,
 } from '@material-ui/core';
 import { DatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
-import React, { useState } from 'react';
-import { getLaundryUser, updateUser } from '../../utils/dbRequests';
+import React, { useContext, useState } from 'react';
 import {
   calculateLaundryUsage,
   createPdfInvoice,
   generateRecieptInfo,
   getMonthYear,
 } from '../../utils/util';
+import {
+  createMonthlyReport,
+  getLaundryUser,
+  updateUser,
+} from '../../utils/dbRequests';
+import SelectFromList from './components/SelectFromList';
+import { ModalContext } from './components/SimpleModal';
+import { useEffect } from 'react';
 
 export default function GenerateReciepts({
   apartments,
   users,
-  refresh,
-  services,
   storage,
+  services,
+  refresh,
 }) {
-  const [progress, setProgress] = useState(40);
-  const [generating, setGenerating] = useState(false);
   const [water, setWater] = useState();
   const [electricity, setElectricity] = useState();
   const [recieptDate, setRecieptDate] = useState(new Date());
+  const [progress, setProgress] = useState(40);
+  const [generating, setGenerating] = useState(false);
+  const [selectedApts, setSelectedApts] = useState([...apartments]);
+  const handleModal = useContext(ModalContext);
 
   const uploadFile = (path, blob, onFinish = (url) => console.log(url)) => {
     var storageRef = storage.ref(path);
@@ -51,10 +60,40 @@ export default function GenerateReciepts({
     );
   };
 
+  const openSelectApts = () => {
+    handleModal(
+      <div style={{ width: 500 }}>
+        <SelectFromList
+          label='Select Apartments'
+          onSave={(apts) => {
+            setSelectedApts(apts);
+            handleModal();
+          }}
+          list={apartments.map((apt) => apt.name)}
+        />
+      </div>
+    );
+  };
+
   const generate = async () => {
+    setProgress(0);
+    setGenerating(true);
+
     const date = recieptDate;
 
-    const recieptPromises = apartments.map(async (apt) => {
+    const filtered = apartments.filter(
+      (apt) =>
+        selectedApts.find((selected) => selected === apt.name) !== undefined
+    );
+
+    const monthReport = {
+      water,
+      electricity,
+      expectedIncome: 0,
+      laundryIncome: 0,
+    };
+
+    const recieptPromises = filtered.map(async (apt) => {
       const user = users.find((usr) => usr.id === apt.tenant.id);
       const laundryUsage = await getLaundryUser(user.id);
       const reciept = generateRecieptInfo(
@@ -65,6 +104,9 @@ export default function GenerateReciepts({
         electricity,
         calculateLaundryUsage(laundryUsage, getMonthYear(date))
       );
+
+      monthReport.expectedIncome += reciept.total;
+      monthReport.laundryIncome += reciept.laundryTotal || 0;
 
       const doc = createPdfInvoice(reciept, date);
       const blobPDF = new Blob([doc.output()], { type: 'application/pdf' });
@@ -80,27 +122,23 @@ export default function GenerateReciepts({
 
     const reciepts = await Promise.all(recieptPromises);
     const amount = reciepts.length;
+    const monthYear = getMonthYear(date);
 
-    setProgress(0);
-    setGenerating(true);
-    uploadFile(reciepts[0].path, reciepts[0].blob);
+    await createMonthlyReport(monthReport, monthYear);
+
     reciepts.forEach((reciept) => {
       const onFinish = async (url) => {
         const newReciepts = [...reciept.user.reciepts];
         newReciepts.push({
           date: date.toISOString(),
-          name: getMonthYear(date),
+          name: monthYear,
           url,
+          paid: false,
         });
         const updatedUser = { ...reciept.user, reciepts: newReciepts };
         await updateUser(updatedUser);
         // SEND EMAIL WITH INVOICE
         setProgress((s) => {
-          if (s + 100 / amount === 100) {
-            setGenerating(false);
-            alert('Generated succefully');
-            refresh();
-          }
           return s + 100 / amount;
         });
       };
@@ -109,14 +147,43 @@ export default function GenerateReciepts({
     // setGenerating(true);
   };
 
+  useEffect(() => {
+    if (Math.round(progress) === 100) {
+      setGenerating(false);
+      alert('Generated Successfully');
+      setTimeout(() => {
+        refresh();
+      }, 1000);
+    }
+  }, [progress]);
+
   if (generating) {
     return (
-      <>
-        <Typography variant='subtitle1'>Generating reciepts</Typography>
-        <LinearProgress variant='determinate' value={progress} />
-      </>
+      <Paper
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'column',
+          padding: 20,
+        }}
+      >
+        {Math.round(progress) === 100 ? (
+          <h2>Generated Successfully</h2>
+        ) : (
+          <>
+            <Typography variant='subtitle1'>Generating reciepts</Typography>
+            <LinearProgress
+              style={{ width: '100%' }}
+              variant='determinate'
+              value={progress}
+            />
+          </>
+        )}
+      </Paper>
     );
   }
+
   return (
     <Paper style={{ width: '100%', maxWidth: 500, padding: 20 }}>
       <h2 style={{ marginBottom: 50 }}>Generate Invoices</h2>
@@ -129,6 +196,7 @@ export default function GenerateReciepts({
               views={['year', 'month']}
               label='Invoice Month && Year'
               value={recieptDate}
+              disableFuture
               onChange={setRecieptDate}
             />
           </MuiPickersUtilsProvider>
@@ -150,6 +218,19 @@ export default function GenerateReciepts({
             variant='outlined'
             label='Electricity bill (./S)'
           />
+        </Grid>
+        <Grid xs={12}>
+          <Button
+            onClick={openSelectApts}
+            style={{ margin: 20 }}
+            variant='contained'
+            color='primary'
+          >
+            Select Apartments
+          </Button>
+          <div>
+            {selectedApts.length}/{apartments.length} apartments selected
+          </div>
         </Grid>
 
         <Grid xs={12}>

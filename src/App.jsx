@@ -5,13 +5,10 @@ import Admin from './views/Admin/Admin';
 import firebase from 'firebase';
 import firebaseConfig from './firebaseCred';
 import MainView from './views/MainView';
-import Apartments from './views/Admin/Apartments';
-import Users from './views/Admin/Users';
 import Loader from './components/Loader';
-import { initDB, setAlert } from './utils/dbRequests';
+import { initDB, setAlert, setStorage } from './utils/dbRequests';
 import { Snackbar } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
-import GenerateReciepts from './views/Admin/GenerateReciepts';
 
 function Alert(props) {
   return <MuiAlert elevation={6} variant='filled' {...props} />;
@@ -42,6 +39,7 @@ function App() {
       initDB();
       setAlert(triggerSnack);
       storage.current = firebase.storage();
+      setStorage(storage.current);
       setLoading(false);
     }
   }, []);
@@ -50,7 +48,20 @@ function App() {
     setSnackProps((s) => ({ ...s, open: false }));
   };
 
-  if (loading) return <Loader />;
+  if (loading)
+    return (
+      <div
+        style={{
+          width: '100vw',
+          height: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <Loader />
+      </div>
+    );
 
   return (
     <div className='App'>

@@ -1,5 +1,13 @@
 /* eslint-disable react/display-name */
-import { Button, IconButton, makeStyles, Typography } from '@material-ui/core';
+import {
+  Button,
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  makeStyles,
+  Paper,
+  Typography,
+} from '@material-ui/core';
 import React, { useContext, useEffect, useState } from 'react';
 import DataTable from './components/DataTable';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
@@ -10,7 +18,7 @@ import { ModalContext } from './components/SimpleModal';
 import { saveUser, deleteUser, updateUser } from '../../utils/dbRequests';
 import DeleteModal from './components/DeleteModal';
 import FileUploader from './components/FileUploader';
-import Reciepts from '../MainView/Reciepts';
+import ListReciepts from '../MainView/ListReciepts';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -24,11 +32,19 @@ const useStyles = makeStyles((theme) => ({
   button: {
     maxWidth: 200,
   },
+  controlsContainer: {
+    display: 'flex',
+  },
+  hideShow: {
+    marginLeft: 10,
+    padding: '0 10px',
+  },
 }));
 
 export default function Users({ storage, auth, users, refresh }) {
   const classes = useStyles();
   const handleModal = useContext(ModalContext);
+  const [hideShow, setHideShow] = useState(true);
 
   const openDownloads = (user) => {
     handleModal(
@@ -47,10 +63,16 @@ export default function Users({ storage, auth, users, refresh }) {
     );
   };
 
-  const openRecieptsModal = (reciepts) => {
+  const openRecieptsModal = (user) => {
     handleModal(
-      <div style={{ width: 570, maxWidth: '80vw', height: 660 }}>
-        <Reciepts reciepts={reciepts} />
+      <div style={{ width: 800, maxWidth: '80vw', height: 660 }}>
+        <ListReciepts
+          handleModal={handleModal}
+          allowEdit
+          refresh={refresh}
+          user={user}
+          reciepts={user.reciepts}
+        />
       </div>
     );
   };
@@ -59,28 +81,29 @@ export default function Users({ storage, auth, users, refresh }) {
     {
       field: 'name',
       headerName: 'Name',
-      width: 250,
+      width: 200,
     },
     {
       field: 'email',
       headerName: 'Email',
       width: 250,
     },
-    {
-      field: 'dni_ruc',
-      headerName: 'Dni/Ruc',
-      width: 150,
-    },
+
     {
       field: 'apartment',
       headerName: 'Apartment',
-      width: 150,
+      width: 120,
       renderCell: (params) => params.value?.name || 'Not assigned',
     },
     {
       field: 'services',
       headerName: 'Services',
       width: 180,
+    },
+    {
+      field: 'dni_ruc',
+      headerName: 'Dni/Ruc',
+      width: 150,
     },
     {
       field: 'debt',
@@ -138,7 +161,7 @@ export default function Users({ storage, auth, users, refresh }) {
       width: 140,
       renderCell: (params) => (
         <Button
-          onClick={() => openRecieptsModal(params.value || [])}
+          onClick={() => openRecieptsModal(params.row || {})}
           variant='outlined'
         >
           {params.value?.length} Reciepts
@@ -191,6 +214,10 @@ export default function Users({ storage, auth, users, refresh }) {
     },
   ];
 
+  if (!hideShow) {
+    columns.splice(4, 7);
+  }
+
   const onSave = async (info, isEdit) => {
     if (!isEdit) {
       auth
@@ -229,14 +256,29 @@ export default function Users({ storage, auth, users, refresh }) {
       <Typography variant='h3'>Users</Typography>
 
       <div className={classes.root}>
-        <Button
-          onClick={() => openAdd()}
-          className={classes.button}
-          startIcon={<PersonAddIcon />}
-          variant='outlined'
-        >
-          Add User{' '}
-        </Button>
+        <div className={classes.controlsContainer}>
+          <Button
+            onClick={() => openAdd()}
+            className={classes.button}
+            startIcon={<PersonAddIcon />}
+            variant='outlined'
+          >
+            Add User{' '}
+          </Button>
+          <Paper className={classes.hideShow}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={hideShow}
+                  onChange={(e) => setHideShow(e.target.checked)}
+                  color='primary'
+                />
+              }
+              label='Show All/Essential Columns'
+            />
+          </Paper>
+        </div>
+
         <DataTable rows={users} columns={columns} />
       </div>
     </div>

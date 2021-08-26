@@ -4,19 +4,28 @@ import Dashboard from './Dashboard';
 import SettingsIcon from '@material-ui/icons/Settings';
 import Users from './Users';
 import Apartments from './Apartments';
-import GenerateReciepts from './GenerateReciepts';
+import Reciepts from './Reciepts';
 import { Redirect, Router } from '@reach/router';
 import { getApartments, getServices, getUsers } from '../../utils/dbRequests';
 import Services from './Services';
 import PeopleIcon from '@material-ui/icons/People';
 import ApartmentIcon from '@material-ui/icons/Apartment';
 import ReceiptIcon from '@material-ui/icons/Receipt';
+import LocalLaundryServiceIcon from '@material-ui/icons/LocalLaundryService';
+import LaundryUseView from './LaundryUseView';
+
 let sideItems = [
   {
     key: 'services',
     text: 'Services',
     link: 'services',
     icon: <SettingsIcon />,
+  },
+  {
+    key: 'laundry',
+    text: 'Laundry',
+    link: 'laundry',
+    icon: <LocalLaundryServiceIcon />,
   },
   {
     key: 'users',
@@ -32,9 +41,9 @@ let sideItems = [
   },
 
   {
-    key: 'generate_recieptes',
-    text: 'Generate Reciepts',
-    link: 'generate-reciepts',
+    key: 'reciepts',
+    text: 'Reciepts',
+    link: 'reciepts',
     icon: <ReceiptIcon />,
   },
 ];
@@ -135,6 +144,7 @@ export default function Admin({ auth, storage }) {
         <Router>
           <Redirect noThrow={true} from='/' to='services' />
           <Services users={users} path='/services' />
+          <LaundryUseView users={users} path='/laundry' />
           <Users
             users={users}
             refresh={refresh}
@@ -148,13 +158,13 @@ export default function Admin({ auth, storage }) {
             refresh={refresh}
             path='/apartments'
           />
-          <GenerateReciepts
+          <Reciepts
             apartments={apartments}
             users={users}
             storage={storage}
             services={services}
             refresh={refresh}
-            path='/generate-reciepts'
+            path='/reciepts'
           />
         </Router>
       </Dashboard>
