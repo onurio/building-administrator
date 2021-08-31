@@ -118,7 +118,7 @@ export const createPdfInvoice = (reciept, date = new Date()) => {
 
   doc.setFontSize(14);
 
-  doc.text(`Mes y año de emision: ${format(date, 'MMM,yyyy')}`, 140, 40);
+  doc.text(`Mes de emision: ${format(date, 'MMM,yyyy')}`, 120, 40);
 
   doc.text(
     [
