@@ -1,6 +1,5 @@
-import { format } from 'date-fns';
 import firebase from 'firebase';
-import { dateToLocalString, getMonthYear } from './util';
+import { getMonthYear, isDateBiggerOrEqual } from './util';
 
 let db, storage;
 let customAlert = () => {};
@@ -23,6 +22,7 @@ const withErrorHandling = async (func) => {
     return await func();
   } catch (error) {
     customAlert(false, error.toString());
+    console.error(error);
     return false;
   }
 };
@@ -204,7 +204,19 @@ export const deleteUser = async (userId) => {
 export const getReservedDates = async (monthYear) => {
   return await withErrorHandling(async () => {
     const doc = await db.collection('laundry').doc('calendar').get();
-    return doc.data()[monthYear] || [];
+    const calendar = doc.data();
+    let reserves = [];
+    if (monthYear) {
+      return calendar[monthYear] || [];
+    } else {
+      Object.keys(calendar).forEach((mY) => {
+        reserves = reserves.concat(calendar[mY]);
+      });
+      reserves = reserves.filter((r) => {
+        return isDateBiggerOrEqual(new Date(r.date));
+      });
+      return reserves || [];
+    }
   });
 };
 
@@ -267,21 +279,27 @@ export const getLaundryUser = async (userId) => {
 
 export const deleteReservation = async (
   userId,
-  monthYear,
-  currentTotalReservations,
   currentUserReservations,
-  closestReservation
+  reservationToDelete
 ) => {
   return await withErrorHandling(async () => {
-    const newTotalReservations = currentTotalReservations.filter(
-      (reservation) => closestReservation !== reservation.date
+    const toDeleteMonthYear = getMonthYear(new Date(reservationToDelete));
+    const reservationsOfMonth = await getReservedDates(toDeleteMonthYear);
+    const newTotalReservationsOfMonth = reservationsOfMonth.filter(
+      (reservation) => {
+        return (
+          new Date(reservationToDelete).setHours(0, 0, 0) !==
+            new Date(reservation.date).setHours(0, 0, 0) &&
+          isDateBiggerOrEqual(new Date(reservation.date))
+        );
+      }
     );
 
     const newUserReservations = currentUserReservations.filter(
-      (date) => closestReservation !== date
+      (date) => reservationToDelete !== date
     );
 
-    let userPath = `${userId}.reservations.${monthYear}`;
+    let userPath = `${userId}.reservations.${toDeleteMonthYear}`;
 
     await db
       .collection('laundry')
@@ -293,12 +311,12 @@ export const deleteReservation = async (
       .collection('laundry')
       .doc('calendar')
       .update({
-        [monthYear]: newTotalReservations,
+        [toDeleteMonthYear]: newTotalReservationsOfMonth,
       });
     logLaundryAction({
       date: new Date().toISOString(),
       userId,
-      message: `User deleted  reservation for ${closestReservation}`,
+      message: `User deleted  reservation for ${reservationToDelete}`,
     });
     customAlert(true, 'Borrado');
   });

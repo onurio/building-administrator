@@ -1,19 +1,10 @@
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-} from '@material-ui/core';
-import format from 'date-fns/format';
+import { Paper } from '@material-ui/core';
 import React, { useState } from 'react';
 import { useEffect } from 'react';
 import { getMonthlyReports } from '../../utils/dbRequests';
-import { getMonthYear } from '../../utils/util';
 import DataTable from './components/DataTable';
 
 export default function MonthlyReports() {
-  const [monthYear, setMonthYear] = useState(getMonthYear(new Date()));
   const [monthlyReports, setMonthlyReports] = useState();
 
   useEffect(() => {

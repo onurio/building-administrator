@@ -12,6 +12,10 @@ export const dateToLocalString = (dateObj) => {
   return format(dateObj, 'dd/MM/yyyy');
 };
 
+export const isDateBiggerOrEqual = (date1, date2 = new Date()) => {
+  return date1.setHours(0, 0, 0, 0) >= date2.setHours(0, 0, 0, 0);
+};
+
 export const generateRecieptInfo = (
   apt,
   user,

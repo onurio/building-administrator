@@ -3,7 +3,7 @@ import {
   KeyboardDatePicker,
   MuiPickersUtilsProvider,
 } from '@material-ui/pickers';
-import { isEqual, addDays, format } from 'date-fns';
+import { addDays, format } from 'date-fns';
 import DateFnsUtils from '@date-io/date-fns';
 import {
   Button,
@@ -23,6 +23,7 @@ import {
   calculateLaundryUsage,
   dateToLocalString,
   getMonthYear,
+  isDateBiggerOrEqual,
 } from '../../utils/util';
 import Loader from '../../components/Loader';
 import { useContext } from 'react';
@@ -104,41 +105,31 @@ export default function Laundry({ userData }) {
   const classes = useStyles();
 
   const refresh = async () => {
-    setDisabledDates(await getReservedDates(monthYear));
+    const reservedDates = await getReservedDates();
+    setDisabledDates(reservedDates);
     const laundryUser = await getLaundryUser(userData.id);
     let closest;
-    let monthReserves = laundryUser?.reservations?.[monthYear] || [];
+
+    let userReserves = reservedDates.filter((r) => {
+      return r.userId === userData.id;
+    });
+    userReserves = userReserves.map((r) => r.date);
 
     const usage = calculateLaundryUsage(laundryUser, monthYear);
     setUserMonthlyUsage(usage);
 
-    if (!monthReserves?.length) {
+    if (!userReserves?.length) {
       setClosestReservation();
       setLoading(false);
-
-      return [];
     }
-    monthReserves = monthReserves.sort();
+    userReserves = userReserves.sort();
 
-    console.log(monthReserves);
-    let today = new Date();
-
-    monthReserves.every((reserve) => {
-      console.log(new Date(reserve));
-
-      if (new Date(reserve) >= today) {
-        closest = reserve;
-        return false;
-      }
-      return true;
-    });
-
-    console.log(closest);
-
-    closest = new Date(closest).getTime() >= today ? closest : undefined;
+    if (userReserves.length > 0) {
+      closest = userReserves[0];
+    }
 
     setClosestReservation(closest);
-    setUserReservations(monthReserves);
+    setUserReservations(userReserves);
 
     setLoading(false);
   };
@@ -169,13 +160,7 @@ export default function Laundry({ userData }) {
 
   const onDeleteReservation = async () => {
     handleModal(<Loader />, { hideExit: true });
-    await deleteReservation(
-      userData.id,
-      monthYear,
-      disabledDates,
-      userReservations,
-      closestReservation
-    );
+    await deleteReservation(userData.id, userReservations, closestReservation);
     setTimeout(() => {
       refresh();
       handleModal();
