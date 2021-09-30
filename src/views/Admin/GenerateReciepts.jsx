@@ -95,6 +95,7 @@ export default function GenerateReciepts({
 
     const recieptPromises = filtered.map(async (apt) => {
       const user = users.find((usr) => usr.id === apt.tenant.id);
+      if (!user) return null;
       const laundryUsage = await getLaundryUser(user.id);
       const reciept = generateRecieptInfo(
         apt,
@@ -127,6 +128,7 @@ export default function GenerateReciepts({
     await createMonthlyReport(monthReport, monthYear);
 
     reciepts.forEach((reciept) => {
+      if (!reciept) return undefined;
       const onFinish = async (url) => {
         const newReciepts = [...reciept.user.reciepts];
         newReciepts.push({

@@ -42,6 +42,11 @@ export const generateRecieptInfo = (
     municipality: Math.round(Number(municipality)),
   };
 
+  if (apt.is_garage) {
+    reciept.maintenance = 0;
+    reciept.administration = 0;
+  }
+
   reciept.water = water
     ? Math.round(water * Number(water_percentage)) / 100
     : '0';
