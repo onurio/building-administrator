@@ -106,6 +106,7 @@ export default function Laundry({ userData }) {
 
   const refresh = async () => {
     const reservedDates = await getReservedDates();
+    console.log(reservedDates);
     setDisabledDates(reservedDates);
     const laundryUser = await getLaundryUser(userData.id);
     let closest;
@@ -228,10 +229,10 @@ export default function Laundry({ userData }) {
               onChange={handleDateSelect}
               disablePast={true}
               shouldDisableDate={(day) => {
-                const compareDate = dateToLocalString(day);
+                const compareDate = day.toISOString().substring(0,10);
                 const isFree = disabledDates.every((disDate) => {
                   return (
-                    dateToLocalString(new Date(disDate.date)) !== compareDate
+                    disDate.date.substring(0,10)!== compareDate
                   );
                 });
                 return !isFree;
