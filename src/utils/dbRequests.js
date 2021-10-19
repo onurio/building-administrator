@@ -1,5 +1,5 @@
-import firebase from 'firebase';
-import { getMonthYear, isDateBiggerOrEqual } from './util';
+import firebase from "firebase";
+import { getMonthYear, isDateBiggerOrEqual } from "./util";
 
 let db, storage;
 let customAlert = () => {};
@@ -29,7 +29,7 @@ const withErrorHandling = async (func) => {
 
 export const deleteAllRecieptsFromMonth = async (month) => {
   return withErrorHandling(async () => {
-    const usersRef = db.collection('users');
+    const usersRef = db.collection("users");
     const snapshot = await usersRef.get();
     const users = snapshot.docs.map((doc) => doc.data());
 
@@ -50,13 +50,13 @@ export const deleteAllRecieptsFromMonth = async (month) => {
         .update({ ...usr, reciepts: filteredReciepts });
     });
     await Promise.all(updatePromises);
-    customAlert(true, 'deleted succesfully');
+    customAlert(true, "deleted succesfully");
   });
 };
 
 export const getAllRecieptsMonths = () => {
   return withErrorHandling(async () => {
-    const snapshot = await db.collection('users').get();
+    const snapshot = await db.collection("users").get();
     const users = snapshot.docs.map((doc) => doc.data());
 
     const recieptMonths = new Set();
@@ -75,15 +75,15 @@ export const deleteReciept = async (user, reciept) => {
     user.reciepts = user.reciepts.filter((r) => r.url !== reciept.url);
     await updateUser(user);
     await storage.refFromURL(reciept.url).delete();
-    customAlert(true, 'Reciept deleted');
+    customAlert(true, "Reciept deleted");
   });
 };
 
 const logLaundryAction = (actionDetails) => {
   withErrorHandling(async () => {
     await db
-      .collection('laundry')
-      .doc('log')
+      .collection("laundry")
+      .doc("log")
       .update({
         [todayMonthYear]:
           firebase.firestore.FieldValue.arrayUnion(actionDetails),
@@ -93,14 +93,14 @@ const logLaundryAction = (actionDetails) => {
 
 export const getServices = async () => {
   return await withErrorHandling(async () => {
-    const doc = await db.collection('general').doc('services').get();
+    const doc = await db.collection("general").doc("services").get();
     return doc.data();
   });
 };
 
 export const getLaundry = async (users) => {
   return await withErrorHandling(async () => {
-    const collection = await db.collection('laundry').get();
+    const collection = await db.collection("laundry").get();
     let laundry = {};
     collection.forEach((doc) => {
       laundry[doc.id] = doc.data();
@@ -120,23 +120,23 @@ export const getLaundry = async (users) => {
 export const updateServices = async (servicesUpdated) => {
   return await withErrorHandling(async () => {
     await db
-      .collection('general')
-      .doc('services')
+      .collection("general")
+      .doc("services")
       .update({ ...servicesUpdated });
-    customAlert(true, 'Updated prices');
+    customAlert(true, "Updated prices");
   });
 };
 
 export const getApartment = async (id) => {
   await withErrorHandling(async () => {
-    const doc = await db.collection('apartments').doc(id).get();
+    const doc = await db.collection("apartments").doc(id).get();
     return doc.data();
   });
 };
 
 export const getApartments = async () => {
   return await withErrorHandling(async () => {
-    const snapshot = await db.collection('apartments').get();
+    const snapshot = await db.collection("apartments").get();
     const array = snapshot.docs.map((apartment) => {
       const processed = apartment.data();
       processed.id = apartment.id;
@@ -150,7 +150,7 @@ export const sendMessage = async (info) => {
   if (!info.subject) delete info.subject;
   try {
     await db
-      .collection('contact_info')
+      .collection("contact_info")
       .doc()
       .set({
         ...info,
@@ -165,21 +165,21 @@ export const sendMessage = async (info) => {
 
 export const saveApartment = async (apartment) => {
   await withErrorHandling(async () => {
-    await db.collection('apartments').doc(apartment.id).set(apartment);
-    customAlert(true, 'Apartment updated');
+    await db.collection("apartments").doc(apartment.id).set(apartment);
+    customAlert(true, "Apartment updated");
   });
 };
 
 export const deleteApartment = async (apartmentId) => {
   await withErrorHandling(async () => {
-    await db.collection('apartments').doc(apartmentId).delete();
-    customAlert(true, 'Apartment deleted');
+    await db.collection("apartments").doc(apartmentId).delete();
+    customAlert(true, "Apartment deleted");
   });
 };
 
 export const getUserFromEmail = async (email) => {
   return await withErrorHandling(async () => {
-    const res = await db.collection('users').where('email', '==', email).get();
+    const res = await db.collection("users").where("email", "==", email).get();
     return res.docs[0].data();
   });
 };
@@ -187,8 +187,8 @@ export const getUserFromEmail = async (email) => {
 export const getApartmentFromUserId = async (userId) => {
   return await withErrorHandling(async () => {
     const res = await db
-      .collection('apartments')
-      .where('tenant.id', '==', userId)
+      .collection("apartments")
+      .where("tenant.id", "==", userId)
       .get();
     return res.docs[0].data();
   });
@@ -196,14 +196,14 @@ export const getApartmentFromUserId = async (userId) => {
 
 export const deleteUser = async (userId) => {
   await withErrorHandling(async () => {
-    await db.collection('users').doc(userId).delete();
-    customAlert(true, 'User deleted');
+    await db.collection("users").doc(userId).delete();
+    customAlert(true, "User deleted");
   });
 };
 
 export const getReservedDates = async (monthYear) => {
   return await withErrorHandling(async () => {
-    const doc = await db.collection('laundry').doc('calendar').get();
+    const doc = await db.collection("laundry").doc("calendar").get();
     const calendar = doc.data();
     let reserves = [];
     if (monthYear) {
@@ -223,9 +223,9 @@ export const getReservedDates = async (monthYear) => {
 export const reserveLaundryDay = async (userId, userName, date) => {
   return await withErrorHandling(async () => {
     const monthYear = getMonthYear(new Date(date));
-    const laundryRef = await db.collection('laundry');
-    const formattedDate = date.toISOString();
-    laundryRef.doc('calendar').update({
+    const laundryRef = await db.collection("laundry");
+    const formattedDate = new Date(date.toString() + "UTC").toISOString();
+    laundryRef.doc("calendar").update({
       [monthYear]: firebase.firestore.FieldValue.arrayUnion({
         userId,
         userName,
@@ -233,7 +233,7 @@ export const reserveLaundryDay = async (userId, userName, date) => {
       }),
     });
 
-    laundryRef.doc('users').update({
+    laundryRef.doc("users").update({
       [`${userId}.reservations.${monthYear}`]:
         firebase.firestore.FieldValue.arrayUnion(formattedDate),
     });
@@ -242,8 +242,9 @@ export const reserveLaundryDay = async (userId, userName, date) => {
       date: new Date().toISOString(),
       userId,
       message: `User reserved for ${formattedDate}`,
+      type: "Reservation",
     });
-    customAlert(true, 'Reservado');
+    customAlert(true, "Reservado");
     return true;
   });
 };
@@ -252,8 +253,8 @@ export const saveLaundryUse = async (washDry, userId, monthYear) => {
   return await withErrorHandling(async () => {
     let todayISO = new Date().toUTCString();
     await db
-      .collection('laundry')
-      .doc('users')
+      .collection("laundry")
+      .doc("users")
       .update({
         [`${userId}.use.${monthYear}`]:
           firebase.firestore.FieldValue.arrayUnion({
@@ -265,14 +266,15 @@ export const saveLaundryUse = async (washDry, userId, monthYear) => {
       date: todayISO,
       userId,
       message: `User registered ${washDry.wash} washes, ${washDry.dry} dries`,
+      type: "Use register",
     });
-    customAlert(true, 'Guardado');
+    customAlert(true, "Guardado");
   });
 };
 
 export const getLaundryUser = async (userId) => {
   return await withErrorHandling(async () => {
-    const doc = await db.collection('laundry').doc('users').get();
+    const doc = await db.collection("laundry").doc("users").get();
     return doc.exists ? doc.data()[userId] : {};
   });
 };
@@ -302,14 +304,14 @@ export const deleteReservation = async (
     let userPath = `${userId}.reservations.${toDeleteMonthYear}`;
 
     await db
-      .collection('laundry')
-      .doc('users')
+      .collection("laundry")
+      .doc("users")
       .update({
         [userPath]: newUserReservations,
       });
     await db
-      .collection('laundry')
-      .doc('calendar')
+      .collection("laundry")
+      .doc("calendar")
       .update({
         [toDeleteMonthYear]: newTotalReservationsOfMonth,
       });
@@ -317,51 +319,52 @@ export const deleteReservation = async (
       date: new Date().toISOString(),
       userId,
       message: `User deleted  reservation for ${reservationToDelete}`,
+      type: "Reservation Delete",
     });
-    customAlert(true, 'Borrado');
+    customAlert(true, "Borrado");
   });
 };
 
 export const getUsers = async () => {
   return await withErrorHandling(async () => {
-    const snapshot = await db.collection('users').get();
+    const snapshot = await db.collection("users").get();
     return snapshot.docs.map((doc) => doc.data());
   });
 };
 
 export const getMonthlyReports = async () => {
   return await withErrorHandling(async () => {
-    const snapshot = await db.collection('monthlyReports').get();
+    const snapshot = await db.collection("monthlyReports").get();
     return snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
   });
 };
 
 export const saveUser = async (user) => {
   await withErrorHandling(async () => {
-    const ref = await db.collection('users').doc(user.id);
+    const ref = await db.collection("users").doc(user.id);
     user.id = ref.id;
     ref.set(user);
-    customAlert(true, 'User saved');
+    customAlert(true, "User saved");
   });
 };
 
 export const updateUser = async (user) => {
   await withErrorHandling(async () => {
-    await db.collection('users').doc(user.id).update(user);
-    customAlert(true, 'User updated');
+    await db.collection("users").doc(user.id).update(user);
+    customAlert(true, "User updated");
   });
 };
 
 export const createMonthlyReport = async (report, monthYear) => {
   await withErrorHandling(async () => {
-    await db.collection('monthlyReports').doc(monthYear).set(report);
+    await db.collection("monthlyReports").doc(monthYear).set(report);
   });
 };
 
 export const sendEmail = async (info) => {
   await withErrorHandling(async () => {
     await db
-      .collection('reciept_email')
+      .collection("reciept_email")
       .doc()
       .set({
         ...info,
