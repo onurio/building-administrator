@@ -224,7 +224,7 @@ export const reserveLaundryDay = async (userId, userName, date) => {
   return await withErrorHandling(async () => {
     const monthYear = getMonthYear(new Date(date));
     const laundryRef = await db.collection("laundry");
-    const formattedDate = new Date(date.toString() + "UTC").toISOString();
+    const formattedDate = date.toISOString();
     laundryRef.doc("calendar").update({
       [monthYear]: firebase.firestore.FieldValue.arrayUnion({
         userId,

@@ -5,7 +5,6 @@ module.exports = {
   },
   extends: [
     'plugin:react/recommended',
-    'airbnb',
   ],
   parserOptions: {
     ecmaFeatures: {
@@ -18,5 +17,7 @@ module.exports = {
     'react',
   ],
   rules: {
+    "react/prop-types": 0,
+    "react/jsx-key": 0
   },
 };

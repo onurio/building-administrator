@@ -63,7 +63,7 @@ export default function LaundryUseView({ users }) {
       field: "date",
       headerName: "Date",
       width: 180,
-      renderCell: (params) => params.value.substring(0, 10),
+      renderCell: (params) => new Date(new Date(params.value).toString() + ' UTC').toString(),
     },
   ];
 

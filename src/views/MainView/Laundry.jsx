@@ -229,10 +229,10 @@ export default function Laundry({ userData }) {
               onChange={handleDateSelect}
               disablePast={true}
               shouldDisableDate={(day) => {
-                const compareDate = day.toISOString().substring(0,10);
+                const compareDate = dateToLocalString(day);
                 const isFree = disabledDates.every((disDate) => {
                   return (
-                    disDate.date.substring(0,10)!== compareDate
+                    dateToLocalString(new Date(disDate.date)) !== compareDate
                   );
                 });
                 return !isFree;
