@@ -6,12 +6,12 @@ import {
   MenuItem,
   Paper,
   Select,
-} from '@material-ui/core';
-import React, { useState, useContext } from 'react';
-import Loader from '../../components/Loader';
-import { deleteAllRecieptsFromMonth } from '../../utils/dbRequests';
-import DeleteModal from './components/DeleteModal';
-import { ModalContext } from './components/SimpleModal';
+} from "@material-ui/core";
+import React, { useState, useContext } from "react";
+import Loader from "../../components/Loader";
+import { deleteAllRecieptsFromMonth } from "../../utils/dbRequests";
+import DeleteModal from "./components/DeleteModal";
+import { ModalContext } from "./components/SimpleModal";
 
 export default function DeleteRecieptMonth({
   refreshAll,
@@ -38,18 +38,24 @@ export default function DeleteRecieptMonth({
 
   return (
     <Paper
-      style={{ width: '100%', marginLeft: 20, maxWidth: 300, padding: 20 }}
+      style={{
+        width: "100%",
+        minWidth: 400,
+        marginLeft: 20,
+        maxWidth: 300,
+        padding: 20,
+      }}
     >
       <h2 style={{ marginBottom: 50 }}>Delete Reciepts By Month</h2>
       <Grid spacing={3} xs={12} container>
-        <Grid style={{ margin: '20px 0' }} xs={12}>
+        <Grid style={{ margin: "20px 0" }} xs={12}>
           <FormControl style={{ width: 200 }}>
-            <InputLabel id='months'>Months</InputLabel>
+            <InputLabel id="months">Months</InputLabel>
             <Select
-              labelId='months'
-              id='months'
+              labelId="months"
+              id="months"
               onChange={(e) => setSelectedMonth(e.target.value)}
-              variant='outlined'
+              variant="outlined"
               value={selectedMonth}
             >
               {recieptsMonths.map((option) => (
@@ -65,8 +71,8 @@ export default function DeleteRecieptMonth({
             disabled={!selectedMonth}
             onClick={onDelete}
             style={{ margin: 20 }}
-            variant='contained'
-            color='primary'
+            variant="contained"
+            color="primary"
           >
             Delete All Reciepts
           </Button>

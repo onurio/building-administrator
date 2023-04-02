@@ -370,5 +370,16 @@ export const sendEmail = async (info) => {
         ...info,
         date_time: new Date().toISOString(),
       });
+    customAlert(true, "Emails processing");
+  });
+};
+
+export const createReminderEmail = async (emails) => {
+  await withErrorHandling(async () => {
+    await db.collection("reminder_email").doc().set({
+      emails: emails,
+      date_time: new Date().toISOString(),
+    });
+    customAlert(true, "Emails processing");
   });
 };

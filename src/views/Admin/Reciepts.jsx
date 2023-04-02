@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
-import { getAllRecieptsMonths } from '../../utils/dbRequests';
+import React, { useState } from "react";
+import { useEffect } from "react";
+import { getAllRecieptsMonths } from "../../utils/dbRequests";
 
-import DeleteRecieptMonth from './DeleteRecieptMonth';
-import GenerateReciepts from './GenerateReciepts';
-import SendRecieptsEmail from './SendRecieptsEmail';
+import DeleteRecieptMonth from "./DeleteRecieptMonth";
+import GenerateReciepts from "./GenerateReciepts";
+import SendRecieptsEmail from "./SendRecieptsEmail";
+import SendReminderEmail from "./SendReminderEmail";
 
 export default function Reciepts({
   apartments,
@@ -29,7 +30,7 @@ export default function Reciepts({
   }, []);
 
   return (
-    <div style={{ display: 'flex', flexWarp: 'wrap' }}>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "25px" }}>
       <GenerateReciepts
         users={users}
         services={services}
@@ -43,6 +44,11 @@ export default function Reciepts({
         refreshAll={refresh}
       />
       <SendRecieptsEmail
+        users={users}
+        recieptsMonths={recieptsMonths}
+        apartments={apartments}
+      />
+      <SendReminderEmail
         users={users}
         recieptsMonths={recieptsMonths}
         apartments={apartments}

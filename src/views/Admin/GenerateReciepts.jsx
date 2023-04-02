@@ -1,4 +1,4 @@
-import DateFnsUtils from '@date-io/date-fns/build/index.esm';
+import DateFnsUtils from "@date-io/date-fns/build/index.esm";
 import {
   Button,
   Grid,
@@ -6,23 +6,23 @@ import {
   TextField,
   LinearProgress,
   Typography,
-} from '@material-ui/core';
-import { DatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
-import React, { useContext, useState } from 'react';
+} from "@material-ui/core";
+import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import React, { useContext, useState } from "react";
 import {
   calculateLaundryUsage,
   createPdfInvoice,
   generateRecieptInfo,
   getMonthYear,
-} from '../../utils/util';
+} from "../../utils/util";
 import {
   createMonthlyReport,
   getLaundryUser,
   updateUser,
-} from '../../utils/dbRequests';
-import SelectFromList from './components/SelectFromList';
-import { ModalContext } from './components/SimpleModal';
-import { useEffect } from 'react';
+} from "../../utils/dbRequests";
+import SelectFromList from "./components/SelectFromList";
+import { ModalContext } from "./components/SimpleModal";
+import { useEffect } from "react";
 
 export default function GenerateReciepts({
   apartments,
@@ -47,7 +47,7 @@ export default function GenerateReciepts({
 
     //Update progress bar
     task.on(
-      'state_changed',
+      "state_changed",
       (snapshot) => {},
       function error(err) {
         console.log(err);
@@ -64,7 +64,7 @@ export default function GenerateReciepts({
     handleModal(
       <div style={{ width: 500 }}>
         <SelectFromList
-          label='Select Apartments'
+          label="Select Apartments"
           onSave={(apts) => {
             setSelectedApts(apts);
             handleModal();
@@ -110,11 +110,11 @@ export default function GenerateReciepts({
       monthReport.laundryIncome += reciept.laundryTotal || 0;
 
       const doc = createPdfInvoice(reciept, date);
-      const blobPDF = new Blob([doc.output()], { type: 'application/pdf' });
+      const blobPDF = new Blob([doc.output()], { type: "application/pdf" });
 
       return {
         blob: blobPDF,
-        path: `${user.name.toLowerCase().replace(' ', '_')}_${
+        path: `${user.name.toLowerCase().replace(" ", "_")}_${
           user.id
         }/reciepts/${getMonthYear(date)}.pdf`,
         user,
@@ -152,7 +152,7 @@ export default function GenerateReciepts({
   useEffect(() => {
     if (Math.round(progress) === 100) {
       setGenerating(false);
-      alert('Generated Successfully');
+      alert("Generated Successfully");
       setTimeout(() => {
         refresh();
       }, 1000);
@@ -163,10 +163,10 @@ export default function GenerateReciepts({
     return (
       <Paper
         style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          flexDirection: 'column',
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
           padding: 20,
         }}
       >
@@ -174,10 +174,10 @@ export default function GenerateReciepts({
           <h2>Generated Successfully</h2>
         ) : (
           <>
-            <Typography variant='subtitle1'>Generating reciepts</Typography>
+            <Typography variant="subtitle1">Generating reciepts</Typography>
             <LinearProgress
-              style={{ width: '100%' }}
-              variant='determinate'
+              style={{ width: "100%" }}
+              variant="determinate"
               value={progress}
             />
           </>
@@ -187,16 +187,16 @@ export default function GenerateReciepts({
   }
 
   return (
-    <Paper style={{ width: '100%', maxWidth: 500, padding: 20 }}>
+    <Paper style={{ width: "100%", minWidth: 400, maxWidth: 500, padding: 20 }}>
       <h2 style={{ marginBottom: 50 }}>Generate Invoices</h2>
       <Grid spacing={3} xs={12} container>
-        <Grid style={{ margin: '20px 0' }} xs={12}>
+        <Grid style={{ margin: "20px 0" }} xs={12}>
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <DatePicker
-              variant='dialog'
-              openTo='year'
-              views={['year', 'month']}
-              label='Invoice Month && Year'
+              variant="dialog"
+              openTo="year"
+              views={["year", "month"]}
+              label="Invoice Month && Year"
               value={recieptDate}
               disableFuture
               onChange={setRecieptDate}
@@ -206,27 +206,27 @@ export default function GenerateReciepts({
         <Grid xs={6}>
           <TextField
             onChange={(e) => setWater(e.target.value)}
-            type='number'
-            name='water'
-            variant='outlined'
-            label='Water bill (./S)'
+            type="number"
+            name="water"
+            variant="outlined"
+            label="Water bill (./S)"
           />
         </Grid>
         <Grid xs={6}>
           <TextField
             onChange={(e) => setElectricity(e.target.value)}
-            type='number'
-            name='electricity'
-            variant='outlined'
-            label='Electricity bill (./S)'
+            type="number"
+            name="electricity"
+            variant="outlined"
+            label="Electricity bill (./S)"
           />
         </Grid>
         <Grid xs={12}>
           <Button
             onClick={openSelectApts}
             style={{ margin: 20 }}
-            variant='contained'
-            color='primary'
+            variant="contained"
+            color="primary"
           >
             Select Apartments
           </Button>
@@ -240,8 +240,8 @@ export default function GenerateReciepts({
             disabled={electricity && water ? false : true}
             onClick={generate}
             style={{ margin: 20 }}
-            variant='contained'
-            color='primary'
+            variant="contained"
+            color="primary"
           >
             Generate Reciepts
           </Button>

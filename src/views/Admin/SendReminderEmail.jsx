@@ -8,23 +8,18 @@ import {
   Select,
 } from "@material-ui/core";
 import React, { useState, useContext } from "react";
-import { sendEmail } from "../../utils/dbRequests";
+import { createReminderEmail, sendEmail } from "../../utils/dbRequests";
 import SelectFromList from "./components/SelectFromList";
 import { ModalContext } from "./components/SimpleModal";
 import PromptModal from "./components/PromptModal";
 
-export default function SendRecieptsEmail({
-  recieptsMonths,
-  apartments,
-  users,
-}) {
-  const [selectedMonth, setSelectedMonth] = useState();
+export default function SendReminderEmail({ apartments, users }) {
   const [selectedApts, setSelectedApts] = useState(
     apartments.map((apt) => apt.name)
   );
   const handleModal = useContext(ModalContext);
 
-  const getRecieptsFromApartments = () => {
+  const getEmailsFromApartments = () => {
     const filteredApts = apartments.filter(
       (apt) => selectedApts.find((sApt) => sApt === apt.name) !== undefined
     );
@@ -34,28 +29,14 @@ export default function SendRecieptsEmail({
       (usr) => usr.id === tenantIds.find((id) => id === usr.id)
     );
 
-    const emailsToSend = [];
-
-    filteredUsers.forEach((usr) => {
-      // usr.reciepts
-      const recieptToSend = usr.reciepts.find(
-        (reciept) => reciept.name === selectedMonth
-      );
-      if (recieptToSend) {
-        emailsToSend.push({ userInfo: { ...usr }, reciept: recieptToSend });
-      }
-    });
-
-    return emailsToSend;
+    return filteredUsers.map((user) => user.email);
   };
 
   const sendEmails = () => {
-    const emailsToSend = getRecieptsFromApartments();
+    const emailsToSendTo = getEmailsFromApartments();
 
     const onSave = () => {
-      emailsToSend.forEach((info) => {
-        sendEmail(info);
-      });
+      createReminderEmail(emailsToSendTo);
       handleModal();
     };
 
@@ -64,7 +45,7 @@ export default function SendRecieptsEmail({
         onSave={onSave}
         onCancel={handleModal}
         actionTitle="SEND"
-        title={`Are you sure you want to send ${emailsToSend.length} emails`}
+        title={`Are you sure you want to send ${emailsToSendTo.length} emails`}
       />
     );
   };
@@ -84,7 +65,7 @@ export default function SendRecieptsEmail({
     );
   };
 
-  if (!recieptsMonths || recieptsMonths?.length === 0) return null;
+  if (!apartments) return null;
 
   return (
     <Paper
@@ -96,27 +77,8 @@ export default function SendRecieptsEmail({
         padding: 20,
       }}
     >
-      <h2 style={{ marginBottom: 50 }}>Send Emails with Reciept</h2>
+      <h2 style={{ marginBottom: 50 }}>Send Reminder Emails</h2>
       <Grid spacing={3} xs={12} container>
-        <Grid style={{ margin: "20px 0" }} xs={12}>
-          <FormControl style={{ width: 200 }}>
-            <InputLabel id="months">Months</InputLabel>
-            <Select
-              labelId="months"
-              id="months"
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              variant="outlined"
-              value={selectedMonth}
-            >
-              {recieptsMonths.map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-
         <Grid xs={12}>
           <Button
             onClick={openSelectApts}
@@ -133,7 +95,7 @@ export default function SendRecieptsEmail({
 
         <Grid xs={12}>
           <Button
-            disabled={!selectedMonth}
+            disabled={selectedApts.length === 0}
             onClick={sendEmails}
             style={{ margin: 20 }}
             variant="contained"
