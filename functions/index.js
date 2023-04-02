@@ -1,21 +1,36 @@
+/* eslint-disable object-curly-spacing */
 /* eslint-disable indent */
 // prettier-ignore
 
 /* eslint-disable max-len */
 /* eslint-disable require-jsdoc */
 const functions = require("firebase-functions");
+
 const nodemailer = require("nodemailer");
+const fs = require("fs");
+const path = require("path");
+
+const recieptText = fs.readFileSync(
+  path.resolve(__dirname, "reciept-email-text.html"),
+  "utf8"
+);
+const reminderText = fs.readFileSync(
+  path.resolve(__dirname, "reminder-email-text.html"),
+  "utf8"
+);
+
+const NODEMAILER_PASSWORD = functions.config().config.nodemailer_pass;
 
 const mailTransport = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: "edificio.juandelcarpio@gmail.com",
-    pass: "jawpfghrpmqrgdnc",
+    pass: NODEMAILER_PASSWORD,
   },
 });
 
 // Sends an email confirmation when a user changes his mailing list subscription.
-exports.sendMail = functions.firestore
+exports.sendRecieptMail = functions.firestore
   .document("/reciept_email/{recieptEmailId}")
   .onCreate((snapshot) => {
     const data = snapshot.data();
@@ -27,34 +42,7 @@ exports.sendMail = functions.firestore
         from: "edificio.juandelcarpio@gmail.com",
         to: data.userInfo.email,
         subject: "Estado de cuenta",
-        html: `<div>
-            <p>Estimado/a Inquilino/a</p>
-            <br />
-            <p>
-              Le enviamos en el adjunto, el estado de cuenta de los gastos del
-              <b>presente mes</b> y lo que corresponde al alquiler del
-              <b>mes que viene</b>.
-            </p>
-            <p>
-              En caso de depositar o transferir el pago, le pedimos por favor
-              enviar el comprobante al mail.
-            </p>
-            <p>Cualquier consulta adicional no dude en contactarnos.</p>
-            <br />
-            <p>
-              Les recuerdo que puede revisar todos sus recibos e informacion
-              adicional, en la
-              <a
-                rel="noreferrer"
-                href="https://edificio-jdc.web.app/"
-                target="_blank"
-              >
-                app del edificio
-              </a>.
-            </p>
-            <p>Saludos cordiales.</p>
-            <p>La Administración.</p>
-          </div>`,
+        html: String(recieptText),
         replyTo: "edificio.juandelcarpio@gmail.com",
         attachments: [
           {
@@ -65,6 +53,30 @@ exports.sendMail = functions.firestore
       });
 
       return info;
+    }
+
+    main().catch(console.error);
+  });
+
+exports.sendReminderMail = functions.firestore
+  .document("/reminder_email/{reminderEmailId}")
+  .onCreate((snapshot) => {
+    const data = snapshot.data();
+
+    async function main() {
+      const emailPromises = data.emails.map(async (email) => {
+        console.log(email);
+        return mailTransport.sendMail({
+          from: "edificio.juandelcarpio@gmail.com",
+          to: email,
+          subject: "Recordatorio de pago",
+          html: String(reminderText),
+          replyTo: "edificio.juandelcarpio@gmail.com",
+        });
+      });
+
+      await Promise.all(emailPromises);
+      return true;
     }
 
     main().catch(console.error);

@@ -10,7 +10,8 @@ module.exports = {
     "google",
   ],
   rules: {
-    quotes: ["error", "double"],
+    "quotes": ["error", "double"],
+    "comma-dangle": ["error", "only-multiline"]
   },
   parserOptions: {
     ecmaVersion: 8,
