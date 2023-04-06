@@ -38,19 +38,28 @@ exports.sendRecieptMail = functions.firestore
     async function main() {
       // send mail with defined transport object
       console.log("sending to " + data.userInfo.email);
-      const info = await mailTransport.sendMail({
-        from: "edificio.juandelcarpio@gmail.com",
-        to: data.userInfo.email,
-        subject: "Estado de cuenta",
-        html: String(recieptText),
-        replyTo: "edificio.juandelcarpio@gmail.com",
-        attachments: [
-          {
-            filename: data.reciept.name + ".pdf",
-            href: data.reciept.url,
-          },
-        ],
-      });
+      const info = await mailTransport.sendMail(
+        {
+          from: "edificio.juandelcarpio@gmail.com",
+          to: data.userInfo.email,
+          subject: "Estado de cuenta",
+          html: String(recieptText),
+          replyTo: "edificio.juandelcarpio@gmail.com",
+          attachments: [
+            {
+              filename: data.reciept.name + ".pdf",
+              href: data.reciept.url,
+            },
+          ],
+        },
+        (err, info) => {
+          if (err) {
+            console.error(err);
+          } else {
+            console.log(info);
+          }
+        }
+      );
 
       return info;
     }
@@ -66,13 +75,22 @@ exports.sendReminderMail = functions.firestore
     async function main() {
       const emailPromises = data.emails.map(async (email) => {
         console.log(email);
-        return mailTransport.sendMail({
-          from: "edificio.juandelcarpio@gmail.com",
-          to: email,
-          subject: "Recordatorio de pago",
-          html: String(reminderText),
-          replyTo: "edificio.juandelcarpio@gmail.com",
-        });
+        return mailTransport.sendMail(
+          {
+            from: "edificio.juandelcarpio@gmail.com",
+            to: email,
+            subject: "Recordatorio de pago",
+            html: String(reminderText),
+            replyTo: "edificio.juandelcarpio@gmail.com",
+          },
+          (err, info) => {
+            if (err) {
+              console.error(err);
+            } else {
+              console.log(info);
+            }
+          }
+        );
       });
 
       await Promise.all(emailPromises);

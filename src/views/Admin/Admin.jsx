@@ -1,50 +1,57 @@
-import React, { useEffect, useState } from 'react';
-import firebase from 'firebase';
-import Dashboard from './Dashboard';
-import SettingsIcon from '@material-ui/icons/Settings';
-import Users from './Users';
-import Apartments from './Apartments';
-import Reciepts from './Reciepts';
-import { Redirect, Router } from '@reach/router';
-import { getApartments, getServices, getUsers } from '../../utils/dbRequests';
-import Services from './Services';
-import PeopleIcon from '@material-ui/icons/People';
-import ApartmentIcon from '@material-ui/icons/Apartment';
-import ReceiptIcon from '@material-ui/icons/Receipt';
-import LocalLaundryServiceIcon from '@material-ui/icons/LocalLaundryService';
-import LaundryUseView from './LaundryUseView';
+import React, { useEffect, useState } from "react";
+import firebase from "firebase";
+import Dashboard from "./Dashboard";
+import SettingsIcon from "@material-ui/icons/Settings";
+import Users from "./Users";
+import Apartments from "./Apartments";
+import Reciepts from "./Reciepts";
+import { Redirect, Router } from "@reach/router";
+import { getApartments, getServices, getUsers } from "../../utils/dbRequests";
+import Services from "./Services";
+import PeopleIcon from "@material-ui/icons/People";
+import ApartmentIcon from "@material-ui/icons/Apartment";
+import ReceiptIcon from "@material-ui/icons/Receipt";
+import LocalLaundryServiceIcon from "@material-ui/icons/LocalLaundryService";
+import LaundryUseView from "./LaundryUseView";
+import WaterAndElectricityEditor from "./WaterAndElectricityEditor";
+import { Equalizer, GraphicEq } from "@material-ui/icons";
 
 let sideItems = [
   {
-    key: 'services',
-    text: 'Services',
-    link: 'services',
+    key: "services",
+    text: "Services",
+    link: "services",
     icon: <SettingsIcon />,
   },
   {
-    key: 'laundry',
-    text: 'Laundry',
-    link: 'laundry',
+    key: "laundry",
+    text: "Laundry",
+    link: "laundry",
     icon: <LocalLaundryServiceIcon />,
   },
   {
-    key: 'users',
-    text: 'Users',
-    link: 'users',
+    key: "users",
+    text: "Users",
+    link: "users",
     icon: <PeopleIcon />,
   },
   {
-    key: 'apartments',
-    text: 'Apartments',
-    link: 'apartments',
+    key: "apartments",
+    text: "Apartments",
+    link: "apartments",
     icon: <ApartmentIcon />,
   },
-
   {
-    key: 'reciepts',
-    text: 'Reciepts',
-    link: 'reciepts',
+    key: "reciepts",
+    text: "Reciepts",
+    link: "reciepts",
     icon: <ReceiptIcon />,
+  },
+  {
+    key: "waterAndElectricity",
+    text: "Water and Electricity",
+    link: "waterandelectricity",
+    icon: <Equalizer />,
   },
 ];
 
@@ -72,9 +79,9 @@ export default function Admin({ auth, storage }) {
       auth.onAuthStateChanged(function (user) {
         if (user) {
           if (
-            user.email === 'omrinuri@gmail.com' ||
-            user.email === 'edificio.juandelcarpio@gmail.com' ||
-            user.email === 'alborde86@gmail.com'
+            user.email === "omrinuri@gmail.com" ||
+            user.email === "edificio.juandelcarpio@gmail.com" ||
+            user.email === "alborde86@gmail.com"
           ) {
             setIsAuthenticaited(true);
           } else {
@@ -116,13 +123,13 @@ export default function Admin({ auth, storage }) {
       .then((result) => {
         const user = result.user;
         if (
-          user.email === 'omrinuri@gmail.com' ||
-          user.email === 'edificio.juandelcarpio@gmail.com' ||
-          user.email === 'alborde86@gmail.com'
+          user.email === "omrinuri@gmail.com" ||
+          user.email === "edificio.juandelcarpio@gmail.com" ||
+          user.email === "alborde86@gmail.com"
         ) {
           setIsAuthenticaited(true);
         } else {
-          alert('Your google account is unauthorized to use this page.');
+          alert("Your google account is unauthorized to use this page.");
           setIsAuthenticaited(false);
         }
         // ...
@@ -137,18 +144,18 @@ export default function Admin({ auth, storage }) {
     return (
       <Dashboard
         sideItems={sideItems}
-        title='Admin Juan del Carpio 104'
-        path='/*'
+        title="Admin Juan del Carpio 104"
+        path="/*"
         logout={logout}
       >
         <Router>
-          <Redirect noThrow={true} from='/' to='services' />
-          <Services users={users} path='/services' />
-          <LaundryUseView users={users} path='/laundry' />
+          <Redirect noThrow={true} from="/" to="services" />
+          <Services users={users} path="/services" />
+          <LaundryUseView users={users} path="/laundry" />
           <Users
             users={users}
             refresh={refresh}
-            path='/users'
+            path="/users"
             auth={auth}
             storage={storage}
           />
@@ -156,7 +163,7 @@ export default function Admin({ auth, storage }) {
             apartments={apartments}
             users={users}
             refresh={refresh}
-            path='/apartments'
+            path="/apartments"
           />
           <Reciepts
             apartments={apartments}
@@ -164,7 +171,14 @@ export default function Admin({ auth, storage }) {
             storage={storage}
             services={services}
             refresh={refresh}
-            path='/reciepts'
+            path="/reciepts"
+          />
+          <WaterAndElectricityEditor
+            apartments={apartments}
+            users={users}
+            services={services}
+            refresh={refresh}
+            path="/waterandelectricity"
           />
         </Router>
       </Dashboard>
