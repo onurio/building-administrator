@@ -74,6 +74,14 @@ export default function Admin({ auth, storage }) {
       });
   };
 
+  const adminEmails = [
+    "omrinuri@gmail.com",
+    "edificio.juandelcarpio@gmail.com",
+    "alborde86@gmail.com",
+    "sebasdeb@gmail.com",
+    "angela.ruizeldredge@gmail.com",
+  ];
+
   useEffect(() => {
     if (auth) {
       auth.onAuthStateChanged(function (user) {
