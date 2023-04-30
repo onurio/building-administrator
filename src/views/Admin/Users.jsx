@@ -7,37 +7,37 @@ import {
   makeStyles,
   Paper,
   Typography,
-} from '@material-ui/core';
-import React, { useContext, useEffect, useState } from 'react';
-import DataTable from './components/DataTable';
-import PersonAddIcon from '@material-ui/icons/PersonAdd';
-import EditIcon from '@material-ui/icons/Edit';
-import DeleteIcon from '@material-ui/icons/Delete';
-import UserEdit from './UserEdit';
-import { ModalContext } from './components/SimpleModal';
-import { saveUser, deleteUser, updateUser } from '../../utils/dbRequests';
-import DeleteModal from './components/DeleteModal';
-import FileUploader from './components/FileUploader';
-import ListReciepts from '../MainView/ListReciepts';
+} from "@material-ui/core";
+import React, { useContext, useEffect, useState } from "react";
+import DataTable from "./components/DataTable";
+import PersonAddIcon from "@material-ui/icons/PersonAdd";
+import EditIcon from "@material-ui/icons/Edit";
+import DeleteIcon from "@material-ui/icons/Delete";
+import UserEdit from "./UserEdit";
+import { ModalContext } from "./components/SimpleModal";
+import { saveUser, deleteUser, updateUser } from "../../utils/dbRequests";
+import DeleteModal from "./components/DeleteModal";
+import FileUploader from "./components/FileUploader";
+import ListReciepts from "../MainView/ListReciepts";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    display: 'flex',
+    display: "flex",
     flexGrow: 1,
 
-    flexDirection: 'column',
-    alignContent: 'center',
-    justifyContent: 'flex-start',
+    flexDirection: "column",
+    alignContent: "center",
+    justifyContent: "flex-start",
   },
   button: {
     maxWidth: 200,
   },
   controlsContainer: {
-    display: 'flex',
+    display: "flex",
   },
   hideShow: {
     marginLeft: 10,
-    padding: '0 10px',
+    padding: "0 10px",
   },
 }));
 
@@ -49,7 +49,7 @@ export default function Users({ storage, auth, users, refresh }) {
   const openDownloads = (user) => {
     handleModal(
       <FileUploader
-        path={`${user.name.toLowerCase().replace(' ', '_')}_${
+        path={`${user.name.toLowerCase().replace(" ", "_")}_${
           user.id
         }/shared_files`}
         files={user.shared_files}
@@ -57,7 +57,7 @@ export default function Users({ storage, auth, users, refresh }) {
           updateUser({ ...user, shared_files: files });
           refresh();
         }}
-        title='Shared Files'
+        title="Shared Files"
         storage={storage}
       />
     );
@@ -65,7 +65,7 @@ export default function Users({ storage, auth, users, refresh }) {
 
   const openRecieptsModal = (user) => {
     handleModal(
-      <div style={{ width: 800, maxWidth: '80vw', height: 660 }}>
+      <div style={{ width: 800, maxWidth: "80vw", height: 660 }}>
         <ListReciepts
           handleModal={handleModal}
           allowEdit
@@ -79,67 +79,67 @@ export default function Users({ storage, auth, users, refresh }) {
 
   const columns = [
     {
-      field: 'name',
-      headerName: 'Name',
+      field: "name",
+      headerName: "Name",
       width: 200,
     },
     {
-      field: 'email',
-      headerName: 'Email',
+      field: "email",
+      headerName: "Email",
       width: 250,
     },
 
     {
-      field: 'apartment',
-      headerName: 'Apartment',
+      field: "apartment",
+      headerName: "Apartment",
       width: 120,
-      renderCell: (params) => params.value?.name || 'Not assigned',
+      renderCell: (params) => params.value?.name || "Not assigned",
     },
     {
-      field: 'services',
-      headerName: 'Services',
+      field: "services",
+      headerName: "Services",
       width: 180,
     },
     {
-      field: 'dni_ruc',
-      headerName: 'Dni/Ruc',
+      field: "dni_ruc",
+      headerName: "Dni/Ruc",
       width: 150,
     },
     {
-      field: 'debt',
-      headerName: 'Debt',
+      field: "debt",
+      headerName: "Debt",
       width: 90,
     },
     {
-      field: 'deposit',
-      headerName: 'Deposit',
+      field: "deposit",
+      headerName: "Deposit",
       width: 120,
     },
     {
-      field: 'tel',
-      headerName: 'Phone',
+      field: "tel",
+      headerName: "Phone",
       width: 110,
     },
     {
-      field: 'telEmergency',
-      headerName: 'E.Phone',
+      field: "telEmergency",
+      headerName: "E.Phone",
       width: 110,
     },
     {
-      field: 'contract_start',
-      headerName: 'Contract End',
+      field: "contract_start",
+      headerName: "Contract Start",
       width: 150,
       renderCell: (params) => new Date(params.value).toLocaleDateString(),
     },
     {
-      field: 'contract_end',
-      headerName: 'Contract Start',
+      field: "contract_end",
+      headerName: "Contract End",
       width: 150,
       renderCell: (params) => new Date(params.value).toLocaleDateString(),
     },
     {
-      field: 'shared_files',
-      headerName: 'Shared Files',
+      field: "shared_files",
+      headerName: "Shared Files",
       sortable: false,
       width: 140,
       renderCell: (params) => (
@@ -147,37 +147,37 @@ export default function Users({ storage, auth, users, refresh }) {
           onClick={() => {
             openDownloads(params.row);
           }}
-          variant='outlined'
-          size='small'
+          variant="outlined"
+          size="small"
         >
           {params.value?.length || 0} Files
         </Button>
       ),
     },
     {
-      field: 'reciepts',
-      headerName: 'Reciepts',
+      field: "reciepts",
+      headerName: "Reciepts",
       sortable: false,
       width: 140,
       renderCell: (params) => (
         <Button
           onClick={() => openRecieptsModal(params.row || {})}
-          variant='outlined'
+          variant="outlined"
         >
           {params.value?.length} Reciepts
         </Button>
       ),
     },
     {
-      field: 'edit',
-      headerName: 'Edit',
+      field: "edit",
+      headerName: "Edit",
       sortable: false,
       width: 100,
       renderCell: (params) => (
         <IconButton
-          variant='contained'
-          color='primary'
-          size='small'
+          variant="contained"
+          color="primary"
+          size="small"
           onClick={() => openAdd(users[params.value])}
           style={{ marginLeft: 16 }}
         >
@@ -186,15 +186,15 @@ export default function Users({ storage, auth, users, refresh }) {
       ),
     },
     {
-      field: 'id',
-      headerName: 'Delete',
+      field: "id",
+      headerName: "Delete",
       sortable: false,
       width: 100,
       renderCell: (params) => (
         <IconButton
-          variant='contained'
-          color='primary'
-          size='small'
+          variant="contained"
+          color="primary"
+          size="small"
           onClick={() =>
             handleModal(
               <DeleteModal
@@ -221,7 +221,7 @@ export default function Users({ storage, auth, users, refresh }) {
   const onSave = async (info, isEdit) => {
     if (!isEdit) {
       auth
-        .createUserWithEmailAndPassword(info.email, '12345678')
+        .createUserWithEmailAndPassword(info.email, "12345678")
         .then(() => {
           saveUser(info);
           handleModal();
@@ -253,7 +253,7 @@ export default function Users({ storage, auth, users, refresh }) {
 
   return (
     <div>
-      <Typography variant='h3'>Users</Typography>
+      <Typography variant="h3">Users</Typography>
 
       <div className={classes.root}>
         <div className={classes.controlsContainer}>
@@ -261,9 +261,9 @@ export default function Users({ storage, auth, users, refresh }) {
             onClick={() => openAdd()}
             className={classes.button}
             startIcon={<PersonAddIcon />}
-            variant='outlined'
+            variant="outlined"
           >
-            Add User{' '}
+            Add User{" "}
           </Button>
           <Paper className={classes.hideShow}>
             <FormControlLabel
@@ -271,10 +271,10 @@ export default function Users({ storage, auth, users, refresh }) {
                 <Checkbox
                   checked={hideShow}
                   onChange={(e) => setHideShow(e.target.checked)}
-                  color='primary'
+                  color="primary"
                 />
               }
-              label='Show All/Essential Columns'
+              label="Show All/Essential Columns"
             />
           </Paper>
         </div>
