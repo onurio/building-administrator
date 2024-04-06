@@ -69,6 +69,12 @@ export default function Apartments({ users, apartments, refresh }) {
       renderCell: (params) => (params.value || 0) + './S',
     },
     {
+      field: 'custom_maintenance',
+      headerName: 'Custom Maintenance',
+      width: 150,
+      renderCell: (params) => (params.value || 'Not Set'),
+    },
+    {
       field: 'edit',
       headerName: 'Edit',
       sortable: false,

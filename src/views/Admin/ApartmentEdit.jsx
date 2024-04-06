@@ -40,6 +40,7 @@ const initialApartment = {
   water_percentage: 0,
   rent: 0,
   municipality: 0,
+  custom_maintenance: undefined,
   is_garage: false,
 };
 
@@ -122,6 +123,17 @@ export default function ApartmentEdit({
           label='Municipality Tax'
           value={apartmentInfo.municipality}
           name='municipality'
+          onChange={handleChange}
+        />
+      </Grid>
+      <Grid item xs={4}>
+        <TextField
+          className={classes.input}
+          variant='outlined'
+          type='number'
+          label='Custom maintenance'
+          value={apartmentInfo.custom_maintenance}
+          name='custom_maintenance'
           onChange={handleChange}
         />
       </Grid>
