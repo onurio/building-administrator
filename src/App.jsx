@@ -3,7 +3,7 @@ import './App.scss';
 import { Router } from '@reach/router';
 import Admin from './views/Admin/Admin';
 import firebase from 'firebase';
-import firebaseConfig from './firebaseCred';
+import firebaseConfig from './firebaseConfig';
 import MainView from './views/MainView';
 import Loader from './components/Loader';
 import { initDB, setAlert, setStorage } from './utils/dbRequests';
