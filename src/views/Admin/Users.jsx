@@ -19,6 +19,7 @@ import { saveUser, deleteUser, updateUser } from "../../utils/dbRequests";
 import DeleteModal from "./components/DeleteModal";
 import FileUploader from "./components/FileUploader";
 import ListReciepts from "../MainView/ListReciepts";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -49,9 +50,8 @@ export default function Users({ storage, auth, users, refresh }) {
   const openDownloads = (user) => {
     handleModal(
       <FileUploader
-        path={`${user.name.toLowerCase().replace(" ", "_")}_${
-          user.id
-        }/shared_files`}
+        path={`${user.name.toLowerCase().replace(" ", "_")}_${user.id
+          }/shared_files`}
         files={user.shared_files}
         onChange={(files) => {
           updateUser({ ...user, shared_files: files });
@@ -220,8 +220,11 @@ export default function Users({ storage, auth, users, refresh }) {
 
   const onSave = async (info, isEdit) => {
     if (!isEdit) {
-      auth
-        .createUserWithEmailAndPassword(info.email, "12345678")
+      createUserWithEmailAndPassword(
+        auth,
+        info.email,
+        "12345678"
+      )
         .then(() => {
           saveUser(info);
           handleModal();

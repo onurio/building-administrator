@@ -15,7 +15,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import SimpleModal from './components/SimpleModal';
-import { Link } from '@reach/router';
+import { Link } from 'react-router-dom';
 
 const drawerWidth = 240;
 

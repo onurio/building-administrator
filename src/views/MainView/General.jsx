@@ -68,7 +68,7 @@ const fields = [
   // },
 ];
 
-export default function General({ userData }) {
+export default function General({ user }) {
   const classes = useStyles();
 
   return (
@@ -88,7 +88,7 @@ export default function General({ userData }) {
                   {field.label}:
                 </Grid>
                 <Grid className={classes.item} xs={6}>
-                  {userData[field.field]}
+                  {user[field.field]}
                 </Grid>
               </>
             ))}
@@ -96,18 +96,18 @@ export default function General({ userData }) {
               Departamento:
             </Grid>
             <Grid className={classes.item} xs={6}>
-              {userData.apartment.name}
+              {user.apartment.name}
             </Grid>
             <Grid className={classes.item} xs={6}>
               Servicios:
             </Grid>
             <Grid className={classes.item} xs={6}>
-              {userData.services.toString()}
+              {user.services.toString()}
             </Grid>
           </Grid>
         </Paper>
         <Paper className={classes.paper}>
-          <SharedFiles sharedFiles={userData.shared_files} />
+          <SharedFiles sharedFiles={user.shared_files} />
         </Paper>
       </div>
     </>

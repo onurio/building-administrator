@@ -13,11 +13,8 @@ import {
   TextField,
   Typography,
 } from '@material-ui/core';
-import DateFnsUtils from '@date-io/date-fns';
-import {
-  MuiPickersUtilsProvider,
-  KeyboardDatePicker,
-} from '@material-ui/pickers';
+import { DatePicker, LocalizationProvider, } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -77,10 +74,10 @@ let services = [
 
 export default function UserEdit({ user, apartments = [], onCancel, onSave }) {
   const classes = useStyles();
-  const [isEdit, setIsEdit] = useState(user !== undefined);
+  const isEdit = user !== undefined;
   const [userInfo, setUserInfo] = useState(user || initialUser);
 
-  useEffect(() => {}, []);
+  useEffect(() => { }, []);
 
   const handleChange = (e) => {
     setUserInfo((s) => ({ ...s, [e.target.name]: e.target.value }));
@@ -132,22 +129,22 @@ export default function UserEdit({ user, apartments = [], onCancel, onSave }) {
         />
       </Grid>
 
-      <MuiPickersUtilsProvider utils={DateFnsUtils}>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Grid item xs={6}>
-          <KeyboardDatePicker
+          <DatePicker
             value={new Date(userInfo.contract_start)}
             className={classes.input}
             onChange={(val) => handleDate(val, 'contract_start')}
             label='Contract start'
           />
-          <KeyboardDatePicker
+          <DatePicker
             value={new Date(userInfo.contract_end)}
             className={classes.input}
             label='Contract end'
             onChange={(val) => handleDate(val, 'contract_end')}
           />
         </Grid>
-      </MuiPickersUtilsProvider>
+      </LocalizationProvider>
 
       <Grid item xs={6}>
         <FormControl className={classes.formControl}>

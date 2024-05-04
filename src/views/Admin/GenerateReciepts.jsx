@@ -1,4 +1,4 @@
-import DateFnsUtils from "@date-io/date-fns/build/index.esm";
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import {
   Button,
   Grid,
@@ -7,7 +7,6 @@ import {
   LinearProgress,
   Typography,
 } from "@material-ui/core";
-import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import React, { useContext, useState } from "react";
 import {
   calculateLaundryUsage,
@@ -23,6 +22,7 @@ import {
 import SelectFromList from "./components/SelectFromList";
 import { ModalContext } from "./components/SimpleModal";
 import { useEffect } from "react";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 
 export default function GenerateReciepts({
   apartments,
@@ -80,7 +80,6 @@ export default function GenerateReciepts({
     setGenerating(true);
 
     const date = recieptDate;
-
     const filtered = apartments.filter(
       (apt) =>
         selectedApts.find((selected) => selected === apt.name) !== undefined
@@ -191,7 +190,7 @@ export default function GenerateReciepts({
       <h2 style={{ marginBottom: 50 }}>Generate Invoices</h2>
       <Grid spacing={3} xs={12} container>
         <Grid style={{ margin: "20px 0" }} xs={12}>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
               variant="dialog"
               openTo="year"
@@ -201,7 +200,7 @@ export default function GenerateReciepts({
               disableFuture
               onChange={setRecieptDate}
             />
-          </MuiPickersUtilsProvider>
+          </LocalizationProvider>
         </Grid>
         <Grid xs={6}>
           <TextField

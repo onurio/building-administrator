@@ -34,7 +34,6 @@ export default function SelectFromList({ list = [], label, onSave }) {
   };
 
   useEffect(() => {
-    console.log(dict);
     setDict(mapListToDict(list));
   }, [list]);
 

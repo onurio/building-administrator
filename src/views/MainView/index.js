@@ -1,4 +1,3 @@
-import { Router } from '@reach/router';
 import React, { useEffect, useState } from 'react';
 import Loader from '../../components/Loader';
 import { getUserFromEmail } from '../../utils/dbRequests';
@@ -10,6 +9,8 @@ import SignIn from './SignIn';
 import LocalLaundryServiceIcon from '@material-ui/icons/LocalLaundryService';
 import PersonIcon from '@material-ui/icons/Person';
 import ReceiptIcon from '@material-ui/icons/Receipt';
+import { Route, Routes } from 'react-router';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 let sideItems = [
   {
@@ -54,19 +55,10 @@ export default function MainView({ auth, children }) {
 
   const login = (email, password) => {
     setLoading(true);
-    auth
-      .signInWithEmailAndPassword(email, password)
-      .then(() => {
-        // console.log(usr);
-        // setIsAuthenticaited(true);
-        // localStorage.setItem('jdcEmail',email);
-      })
+
+    signInWithEmailAndPassword(auth, email, password)
       .catch(function (error) {
         setLoading(false);
-
-        // Handle Errors here.
-        // var errorCode = error.code;
-        // var errorMessage = error.message;
         alert(error.message);
       });
   };
@@ -122,21 +114,16 @@ export default function MainView({ auth, children }) {
     return (
       <Dashboard
         sideItems={sideItems}
-        title={`Edificio Juan del Carpio Dashboard - ${userData.name} (${
-          userData.apartment?.name || 'Sin departamento'
-        })`}
+        title={`Edificio Juan del Carpio Dashboard - ${userData.name} (${userData.apartment?.name || 'Sin departamento'
+          })`}
         path='/*'
         logout={logout}
       >
-        <Router>
-          <General userData={userData} path='/' />
-          <ListReciepts
-            userData={userData}
-            reciepts={userData.reciepts}
-            path='/reciepts'
-          />
-          {enableLaundry && <Laundry userData={userData} path='/laundry' />}
-        </Router>
+        <Routes>
+          <Route path='/' element={<General user={userData} />} />
+          <Route path='/reciepts' element={<ListReciepts user={userData} />} />
+          {enableLaundry && <Route path='/laundry' element={<Laundry userData={userData} />} />}
+        </Routes>
       </Dashboard>
     );
   } else {

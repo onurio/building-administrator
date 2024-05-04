@@ -1,14 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './App.scss';
-import { Router } from '@reach/router';
 import Admin from './views/Admin/Admin';
-import firebase from 'firebase';
 import firebaseConfig from './firebaseConfig';
 import MainView from './views/MainView';
 import Loader from './components/Loader';
 import { initDB, setAlert, setStorage } from './utils/dbRequests';
 import { Snackbar } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
+import { initializeApp } from 'firebase/app';
+import { initializeAnalytics } from 'firebase/analytics';
+import { getAuth } from 'firebase/auth';
+import { getStorage } from 'firebase/storage';
+import { Route, Router, Routes } from 'react-router';
 
 function Alert(props) {
   return <MuiAlert elevation={6} variant='filled' {...props} />;
@@ -31,14 +34,14 @@ function App() {
 
   useEffect(() => {
     if (!app.current) {
-      app.current = firebase.initializeApp(firebaseConfig);
+      app.current = initializeApp(firebaseConfig);
 
-      firebase.analytics();
-      auth.current = firebase.auth();
+      initializeAnalytics(app.current);
+      auth.current = getAuth(app.current)
 
       initDB();
       setAlert(triggerSnack);
-      storage.current = firebase.storage();
+      storage.current = getStorage(app.current);
       setStorage(storage.current);
       setLoading(false);
     }
@@ -65,10 +68,10 @@ function App() {
 
   return (
     <div className='App'>
-      <Router>
-        <MainView auth={auth.current} path='/*' />
-        <Admin auth={auth.current} storage={storage.current} path='admin/*' />
-      </Router>
+      <Routes>
+        <Route path='/*' element={<MainView auth={auth.current} />} />
+        <Route path='/admin/*' element={<Admin auth={auth.current} storage={storage.current} />} />
+      </Routes>
       <Snackbar
         open={snackProps.open}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}

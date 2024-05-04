@@ -1,14 +1,11 @@
 /* eslint-disable react/display-name */
 import { IconButton, makeStyles, Typography } from "@material-ui/core";
 import { CloudDownloadRounded } from "@material-ui/icons";
-import { format } from "date-fns/esm";
 import React from "react";
 import Loader from "../../components/Loader";
 
 import DataTable from "../Admin/components/DataTable";
 import DeleteModal from "../Admin/components/DeleteModal";
-import { ModalContext } from "../Admin/components/SimpleModal";
-import DisplayReciept from "./DisplayReciept";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { deleteReciept, updateUser } from "../../utils/dbRequests";
 import SimpleCheckBox from "../Admin/components/SimpleCheckBox";
@@ -29,13 +26,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Reciepts({
-  handleModal = () => {},
+  handleModal = () => { },
   user,
-  reciepts,
   refresh,
   allowEdit = false,
 }) {
   const classes = useStyles();
+  const reciepts = user.reciepts;
 
   const processedReciepts = reciepts.map((r, i) => ({ ...r, id: i }));
 

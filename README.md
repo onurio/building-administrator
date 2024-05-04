@@ -79,4 +79,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Omri Nuri - [omrinuri@gmail.com](mailto:omrinuril@gmail.com)
+Omri Nuri - [omrinuri@gmail.com](mailto:omrinuril@gmail.com) 
+

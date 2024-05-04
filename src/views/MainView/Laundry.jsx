@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-  KeyboardDatePicker,
-  MuiPickersUtilsProvider,
-} from '@material-ui/pickers';
 import { addDays, format } from 'date-fns';
-import DateFnsUtils from '@date-io/date-fns';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import {
   Button,
   makeStyles,
@@ -28,6 +24,7 @@ import {
 import Loader from '../../components/Loader';
 import { useContext } from 'react';
 import { ModalContext } from '../Admin/components/SimpleModal';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 
 const monthYear = getMonthYear(new Date());
 
@@ -106,7 +103,6 @@ export default function Laundry({ userData }) {
 
   const refresh = async () => {
     const reservedDates = await getReservedDates();
-    console.log(reservedDates);
     setDisabledDates(reservedDates);
     const laundryUser = await getLaundryUser(userData.id);
     let closest;
@@ -190,7 +186,7 @@ export default function Laundry({ userData }) {
         Lavanderia
       </Typography>
 
-      <MuiPickersUtilsProvider utils={DateFnsUtils}>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Paper className={classes.root}>
           <Paper className={classes.reserveSection}>
             <h2 style={{ marginBottom: 20 }}>Reservar dia para lavar</h2>
@@ -220,7 +216,7 @@ export default function Laundry({ userData }) {
                 </Button>
               </Paper>
             )}
-            <KeyboardDatePicker
+            <DatePicker
               margin='normal'
               id='date-picker-dialog'
               label='Date picker dialog'
@@ -319,7 +315,7 @@ export default function Laundry({ userData }) {
             )}
           </Paper>
         </Paper>
-      </MuiPickersUtilsProvider>
+      </LocalizationProvider>
     </div>
   );
 }

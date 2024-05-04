@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import firebase from "firebase";
 import Dashboard from "./Dashboard";
 import SettingsIcon from "@material-ui/icons/Settings";
 import Users from "./Users";
 import Apartments from "./Apartments";
 import Reciepts from "./Reciepts";
-import { Redirect, Router } from "@reach/router";
 import { getApartments, getServices, getUsers } from "../../utils/dbRequests";
 import Services from "./Services";
 import PeopleIcon from "@material-ui/icons/People";
@@ -15,7 +13,11 @@ import LocalLaundryServiceIcon from "@material-ui/icons/LocalLaundryService";
 import LaundryUseView from "./LaundryUseView";
 import WaterAndElectricityEditor from "./WaterAndElectricityEditor";
 import { Equalizer, GraphicEq } from "@material-ui/icons";
+import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
+import { Route, Router, Routes } from "react-router";
 
+let ADMIN_EMAILS = process.env.REACT_APP_ADMIN_EMAILS ?? "";
+ADMIN_EMAILS = ADMIN_EMAILS.split(",");
 let sideItems = [
   {
     key: "services",
@@ -74,22 +76,12 @@ export default function Admin({ auth, storage }) {
       });
   };
 
-  const adminEmails = [
-    "omrinuri@gmail.com",
-    "edificio.juandelcarpio@gmail.com",
-    "alborde86@gmail.com",
-    "sebasdeb@gmail.com",
-    "angela.ruizeldredge@gmail.com",
-  ];
-
   useEffect(() => {
     if (auth) {
       auth.onAuthStateChanged(function (user) {
         if (user) {
           if (
-            user.email === "omrinuri@gmail.com" ||
-            user.email === "edificio.juandelcarpio@gmail.com" ||
-            user.email === "alborde86@gmail.com"
+            ADMIN_EMAILS.includes(user.email)
           ) {
             setIsAuthenticaited(true);
           } else {
@@ -106,7 +98,7 @@ export default function Admin({ auth, storage }) {
 
   const refresh = async () => {
     const addIndexes = (arr) => {
-      return arr.map((item, index) => {
+      return arr ?? [].map((item, index) => {
         return { ...item, edit: index };
       });
     };
@@ -123,11 +115,9 @@ export default function Admin({ auth, storage }) {
 
   const login = () => {
     if (isAuthenticaited) return;
-    const provider = new firebase.auth.GoogleAuthProvider();
-
-    firebase
-      .auth()
-      .signInWithPopup(provider)
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider()
+    signInWithPopup(auth, provider)
       .then((result) => {
         const user = result.user;
         if (
@@ -156,39 +146,15 @@ export default function Admin({ auth, storage }) {
         path="/*"
         logout={logout}
       >
-        <Router>
-          <Redirect noThrow={true} from="/" to="services" />
-          <Services users={users} path="/services" />
-          <LaundryUseView users={users} path="/laundry" />
-          <Users
-            users={users}
-            refresh={refresh}
-            path="/users"
-            auth={auth}
-            storage={storage}
-          />
-          <Apartments
-            apartments={apartments}
-            users={users}
-            refresh={refresh}
-            path="/apartments"
-          />
-          <Reciepts
-            apartments={apartments}
-            users={users}
-            storage={storage}
-            services={services}
-            refresh={refresh}
-            path="/reciepts"
-          />
-          <WaterAndElectricityEditor
-            apartments={apartments}
-            users={users}
-            services={services}
-            refresh={refresh}
-            path="/waterandelectricity"
-          />
-        </Router>
+        <Routes>
+          <Route path="/" element={<Services users={users} path="/services" />} />
+          <Route path="/services" element={<Services users={users} path="/services" />} />
+          <Route path="/laundry" element={<LaundryUseView users={users} path="/laundry" />} />
+          <Route path="/users" element={<Users users={users} refresh={refresh} path="/users" auth={auth} storage={storage} />} />
+          <Route path="/apartments" element={<Apartments apartments={apartments} users={users} refresh={refresh} path="/apartments" />} />
+          <Route path="/reciepts" element={<Reciepts apartments={apartments} users={users} storage={storage} services={services} refresh={refresh} path="/reciepts" />} />
+          <Route path="/waterandelectricity" element={<WaterAndElectricityEditor apartments={apartments} users={users} services={services} refresh={refresh} path="/waterandelectricity" />} />
+        </Routes>
       </Dashboard>
     );
   } else {

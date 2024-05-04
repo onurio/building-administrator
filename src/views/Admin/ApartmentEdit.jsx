@@ -40,7 +40,7 @@ const initialApartment = {
   water_percentage: 0,
   rent: 0,
   municipality: 0,
-  custom_maintenance: undefined,
+  custom_maintenance: null,
   is_garage: false,
 };
 
@@ -51,7 +51,7 @@ export default function ApartmentEdit({
   onSave,
 }) {
   const classes = useStyles();
-  const [isEdit, setIsEdit] = useState(apartment !== undefined);
+  const isEdit = apartment !== undefined;
   const [apartmentInfo, setApartmentInfo] = useState(
     apartment || initialApartment
   );
@@ -132,6 +132,7 @@ export default function ApartmentEdit({
           variant='outlined'
           type='number'
           label='Custom maintenance'
+          defaultValue={null}
           value={apartmentInfo.custom_maintenance}
           name='custom_maintenance'
           onChange={handleChange}

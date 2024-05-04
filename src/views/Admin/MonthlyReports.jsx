@@ -11,8 +11,6 @@ export default function MonthlyReports() {
     getMonthlyReports().then(setMonthlyReports);
   }, []);
 
-  console.log(monthlyReports);
-
   if (!monthlyReports) return null;
   const columns = [
     {
