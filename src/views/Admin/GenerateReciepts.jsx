@@ -23,6 +23,7 @@ import SelectFromList from "./components/SelectFromList";
 import { ModalContext } from "./components/SimpleModal";
 import { useEffect } from "react";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from 'firebase/storage';
 
 export default function GenerateReciepts({
   apartments,
@@ -40,20 +41,22 @@ export default function GenerateReciepts({
   const handleModal = useContext(ModalContext);
 
   const uploadFile = (path, blob, onFinish = (url) => console.log(url)) => {
-    var storageRef = storage.ref(path);
 
-    //Upload file
-    var task = storageRef.put(blob);
+    const storageRef = ref(storage, path)
+
+    uploadBytes(storageRef, blob)
+    const task = uploadBytesResumable(storageRef, blob);
+
 
     //Update progress bar
     task.on(
       "state_changed",
-      (snapshot) => {},
+      (snapshot) => { },
       function error(err) {
         console.log(err);
       },
       () => {
-        task.snapshot.ref.getDownloadURL().then((url) => {
+        getDownloadURL(task.snapshot.ref).then((url) => {
           onFinish(url);
         });
       }
@@ -105,6 +108,8 @@ export default function GenerateReciepts({
         calculateLaundryUsage(laundryUsage, getMonthYear(date))
       );
 
+
+
       monthReport.expectedIncome += reciept.total;
       monthReport.laundryIncome += reciept.laundryTotal || 0;
 
@@ -113,9 +118,8 @@ export default function GenerateReciepts({
 
       return {
         blob: blobPDF,
-        path: `${user.name.toLowerCase().replace(" ", "_")}_${
-          user.id
-        }/reciepts/${getMonthYear(date)}.pdf`,
+        path: `${user.name.toLowerCase().replace(" ", "_")}_${user.id
+          }/reciepts/${getMonthYear(date)}.pdf`,
         user,
       };
     });

@@ -46,8 +46,8 @@ export const generateRecieptInfo = (
     reciept.maintenance = 0;
     reciept.administration = 0;
   }
-  if(apt.custom_maintenance){
-    reciept.maintenance = Math.round(Number(apt.custom_maintenance)); 
+  if (apt.custom_maintenance) {
+    reciept.maintenance = Math.round(Number(apt.custom_maintenance));
   }
 
   reciept.water = water
