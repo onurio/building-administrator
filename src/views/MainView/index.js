@@ -1,35 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import Loader from '../../components/Loader';
-import { getUserFromEmail } from '../../utils/dbRequests';
-import Dashboard from '../Admin/Dashboard';
-import Laundry from './Laundry';
-import ListReciepts from './ListReciepts';
-import General from './General';
-import SignIn from './SignIn';
-import LocalLaundryServiceIcon from '@material-ui/icons/LocalLaundryService';
-import PersonIcon from '@material-ui/icons/Person';
-import ReceiptIcon from '@material-ui/icons/Receipt';
-import { Route, Routes } from 'react-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import React, { useEffect, useState } from "react";
+import Loader from "../../components/Loader";
+import { getUserFromEmail } from "../../utils/dbRequests";
+import Dashboard from "../Admin/Dashboard";
+import Laundry from "./Laundry";
+import ListReciepts from "./ListReciepts.tsx";
+import General from "./General";
+import SignIn from "./SignIn";
+import LocalLaundryServiceIcon from "@material-ui/icons/LocalLaundryService";
+import PersonIcon from "@material-ui/icons/Person";
+import ReceiptIcon from "@material-ui/icons/Receipt";
+import { Route, Routes } from "react-router";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 let sideItems = [
   {
-    key: 'general',
-    text: 'General',
-    link: '/',
+    key: "general",
+    text: "General",
+    link: "/",
     icon: <PersonIcon />,
   },
   {
-    key: 'reciepts',
-    text: 'Recibos',
-    link: '/reciepts',
+    key: "reciepts",
+    text: "Recibos",
+    link: "/reciepts",
     icon: <ReceiptIcon />,
   },
 
   {
-    key: 'laundry',
-    text: 'Lavanderia',
-    link: '/laundry',
+    key: "laundry",
+    text: "Lavanderia",
+    link: "/laundry",
     icon: <LocalLaundryServiceIcon />,
   },
 ];
@@ -56,11 +56,10 @@ export default function MainView({ auth, children }) {
   const login = (email, password) => {
     setLoading(true);
 
-    signInWithEmailAndPassword(auth, email, password)
-      .catch(function (error) {
-        setLoading(false);
-        alert(error.message);
-      });
+    signInWithEmailAndPassword(auth, email, password).catch(function (error) {
+      setLoading(false);
+      alert(error.message);
+    });
   };
 
   useEffect(() => {
@@ -80,7 +79,7 @@ export default function MainView({ auth, children }) {
   }, [auth]);
 
   const resetPass = () => {
-    let email = prompt('Escribe tu correo aqui, para resetear tu cuenta');
+    let email = prompt("Escribe tu correo aqui, para resetear tu cuenta");
     if (email) {
       auth.sendPasswordResetEmail(email);
     }
@@ -90,11 +89,11 @@ export default function MainView({ auth, children }) {
     return (
       <div
         style={{
-          width: '100vw',
-          height: '100vh',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
+          width: "100vw",
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
         <Loader />
@@ -104,9 +103,9 @@ export default function MainView({ auth, children }) {
   let enableLaundry = true;
 
   if (userData) {
-    if (userData.services.indexOf('laundry') === -1) {
+    if (userData.services.indexOf("laundry") === -1) {
       enableLaundry = false;
-      sideItems = sideItems.filter((item) => item.key !== 'laundry');
+      sideItems = sideItems.filter((item) => item.key !== "laundry");
     }
   }
 
@@ -114,15 +113,18 @@ export default function MainView({ auth, children }) {
     return (
       <Dashboard
         sideItems={sideItems}
-        title={`Edificio Juan del Carpio Dashboard - ${userData.name} (${userData.apartment?.name || 'Sin departamento'
-          })`}
-        path='/*'
+        title={`Edificio Juan del Carpio Dashboard - ${userData.name} (${
+          userData.apartment?.name || "Sin departamento"
+        })`}
+        path="/*"
         logout={logout}
       >
         <Routes>
-          <Route path='/' element={<General user={userData} />} />
-          <Route path='/reciepts' element={<ListReciepts user={userData} />} />
-          {enableLaundry && <Route path='/laundry' element={<Laundry userData={userData} />} />}
+          <Route path="/" element={<General user={userData} />} />
+          <Route path="/reciepts" element={<ListReciepts user={userData} />} />
+          {enableLaundry && (
+            <Route path="/laundry" element={<Laundry userData={userData} />} />
+          )}
         </Routes>
       </Dashboard>
     );

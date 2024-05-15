@@ -1,6 +1,5 @@
-import React, { useContext, useState } from 'react';
-import PropTypes from 'prop-types';
-import { Button, Grid, makeStyles } from '@material-ui/core';
+import React from "react";
+import { Button, Grid, makeStyles } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -8,7 +7,7 @@ const useStyles = makeStyles((theme) => ({
   },
   paper: {
     backgroundColor: theme.palette.background.paper,
-    border: '2px solid #000',
+    border: "2px solid #000",
     boxShadow: theme.shadows[5],
     padding: theme.spacing(2, 4, 3),
   },

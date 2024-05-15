@@ -1,4 +1,3 @@
-/* eslint-disable react/display-name */
 import { IconButton, makeStyles, Typography } from "@material-ui/core";
 import { CloudDownloadRounded } from "@material-ui/icons";
 import React from "react";
@@ -7,8 +6,9 @@ import Loader from "../../components/Loader";
 import DataTable from "../Admin/components/DataTable";
 import DeleteModal from "../Admin/components/DeleteModal";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { deleteReciept, updateUser } from "../../utils/dbRequests";
+import { deleteReciept, storage, updateUser } from "../../utils/dbRequests";
 import SimpleCheckBox from "../Admin/components/SimpleCheckBox";
+import { getDownloadURL, ref } from "firebase/storage";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Reciepts({
-  handleModal = () => { },
+  handleModal = () => {},
   user,
   refresh,
   allowEdit = false,
@@ -38,6 +38,12 @@ export default function Reciepts({
 
   const onDelete = async (reciept) => {
     await deleteReciept(user, reciept);
+  };
+
+  const downloadFileFromStorage = async (reciept) => {
+    const storageRef = ref(storage, reciept.url);
+    const url = await getDownloadURL(storageRef);
+    window.open(url, "_blank");
   };
 
   const handleChangePaid = async (reciept, isPaid) => {
@@ -56,13 +62,21 @@ export default function Reciepts({
       headerName: allowEdit ? "Download" : "Descargar",
       width: 120,
       sortable: false,
-      renderCell: (params) => (
-        <a href={params.value} target="_blank" rel="noreferrer">
-          <IconButton>
-            <CloudDownloadRounded />
-          </IconButton>
-        </a>
-      ),
+      renderCell: (params) => {
+        return (
+          <a
+            onClick={() => {
+              downloadFileFromStorage(params.row);
+            }}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <IconButton>
+              <CloudDownloadRounded />
+            </IconButton>
+          </a>
+        );
+      },
     },
     {
       field: "date",
