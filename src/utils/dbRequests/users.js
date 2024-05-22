@@ -15,7 +15,7 @@ export const getUserFromEmail = async (email) => {
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", email));
     const res = await getDocs(q);
-    return res.docs[0].data();
+    return res.docs?.[0]?.data();
   });
 };
 
