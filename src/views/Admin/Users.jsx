@@ -221,7 +221,7 @@ export default function Users({ storage, auth, users, refresh }) {
 
   const onSave = async (info, isEdit) => {
     if (!isEdit) {
-      createUserWithEmailAndPassword(auth, info.email, "12345678")
+      createUserWithEmailAndPassword(auth, info.email.toLowerCase(), "12345678")
         .then(() => {
           saveUser(info);
           handleModal();

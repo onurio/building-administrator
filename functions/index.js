@@ -5,6 +5,7 @@
 /* eslint-disable max-len */
 /* eslint-disable require-jsdoc */
 const functions = require("firebase-functions");
+const { defineString } = require("firebase-functions/params");
 
 const nodemailer = require("nodemailer");
 const fs = require("fs");
@@ -19,7 +20,7 @@ const reminderText = fs.readFileSync(
   "utf8"
 );
 
-const NODEMAILER_PASSWORD = functions.config().config.nodemailer_pass;
+const NODEMAILER_PASSWORD = defineString("CONFIG_NODEMAILER_PASS");
 
 const mailTransport = nodemailer.createTransport({
   service: "gmail",

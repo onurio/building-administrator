@@ -1,6 +1,6 @@
 import { getDocs, collection } from "firebase/firestore";
 import { withErrorHandling, db, customAlert, storage } from "./dbutils";
-import { updateUser } from "./users";
+import { getUsers, updateUser } from "./users";
 import { deleteObject, ref } from "firebase/storage";
 
 export const deleteAllRecieptsFromMonth = async (month) => {
@@ -13,7 +13,7 @@ export const deleteAllRecieptsFromMonth = async (month) => {
       const deletePromises = usr.reciepts.map(async (reciept) => {
         if (month === reciept.name) {
           withErrorHandling(async () => {
-            await storage.refFromURL(reciept.url).delete();
+            await ref(storage, reciept.url).delete();
           });
         }
       });

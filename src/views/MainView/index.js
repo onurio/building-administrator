@@ -56,17 +56,24 @@ export default function MainView({ auth, children }) {
   const login = (email, password) => {
     setLoading(true);
 
-    signInWithEmailAndPassword(auth, email, password).catch(function (error) {
-      setLoading(false);
-      alert(error.message);
-    });
+    signInWithEmailAndPassword(auth, email, password)
+      .then((usr) => {
+        setLoading(false);
+        console.log(usr);
+      })
+      .catch(function (error) {
+        setLoading(false);
+        alert(error.message);
+      });
   };
 
   useEffect(() => {
     if (auth) {
       auth.onAuthStateChanged((user) => {
+        console.log("changed", user);
         if (user) {
           getUserFromEmail(user.email).then((data) => {
+            console.log(data);
             setUserData(data);
             setIsAuthenticaited(true);
             setLoading(false);
@@ -108,6 +115,8 @@ export default function MainView({ auth, children }) {
       sideItems = sideItems.filter((item) => item.key !== "laundry");
     }
   }
+
+  console.log(userData);
 
   if (isAuthenticated && userData) {
     return (
