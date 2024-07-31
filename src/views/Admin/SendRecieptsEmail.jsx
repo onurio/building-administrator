@@ -8,7 +8,7 @@ import {
   Select,
 } from "@material-ui/core";
 import React, { useState, useContext } from "react";
-import { sendEmail } from "../../utils/dbRequests";
+import { customAlert, sendEmail } from "../../utils/dbRequests";
 import SelectFromList from "./components/SelectFromList";
 import { ModalContext } from "./components/SimpleModal";
 import PromptModal from "./components/PromptModal";
@@ -52,10 +52,11 @@ export default function SendRecieptsEmail({
   const sendEmails = () => {
     const emailsToSend = getRecieptsFromApartments();
 
-    const onSave = () => {
-      emailsToSend.forEach((info) => {
-        sendEmail(info);
-      });
+    const onSave = async () => {
+      emailsToSend.map(async (info) => sendEmail(info));
+      const responses = await Promise.all(emailsToSend);
+      console.log(responses);
+      customAlert(true, "Emails sent successfully");
       handleModal();
     };
 
