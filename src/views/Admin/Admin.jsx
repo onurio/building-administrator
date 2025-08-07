@@ -15,6 +15,7 @@ import WaterAndElectricityEditor from "./WaterAndElectricityEditor";
 import { Equalizer, GraphicEq } from "@material-ui/icons";
 import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
 import { Route, Router, Routes } from "react-router";
+import AdminLogin from "./AdminLogin";
 
 let ADMIN_EMAILS = process.env.REACT_APP_ADMIN_EMAILS ?? "";
 ADMIN_EMAILS = ADMIN_EMAILS.split(",");
@@ -113,29 +114,8 @@ export default function Admin({ auth, storage }) {
     }
   }, [isAuthenticaited]);
 
-  const login = () => {
-    if (isAuthenticaited) return;
-    const auth = getAuth();
-    const provider = new GoogleAuthProvider()
-    signInWithPopup(auth, provider)
-      .then((result) => {
-        const user = result.user;
-        if (
-          user.email === "omrinuri@gmail.com" ||
-          user.email === "edificio.juandelcarpio@gmail.com" ||
-          user.email === "alborde86@gmail.com"
-        ) {
-          setIsAuthenticaited(true);
-        } else {
-          alert("Your google account is unauthorized to use this page.");
-          setIsAuthenticaited(false);
-        }
-        // ...
-      })
-      .catch((error) => {
-        // Handle Errors here.
-        alert(error.message);
-      });
+  const handleLoginSuccess = () => {
+    setIsAuthenticaited(true);
   };
 
   if (isAuthenticaited) {
@@ -158,11 +138,6 @@ export default function Admin({ auth, storage }) {
       </Dashboard>
     );
   } else {
-    return (
-      <div>
-        <h1>You must log be an admin to view this page</h1>
-        <button onClick={login}>Login using google</button>
-      </div>
-    );
+    return <AdminLogin onLoginSuccess={handleLoginSuccess} />;
   }
 }

@@ -8,7 +8,17 @@ export default function MonthlyReports() {
   const [monthlyReports, setMonthlyReports] = useState();
 
   useEffect(() => {
-    getMonthlyReports().then(setMonthlyReports);
+    getMonthlyReports().then((reports) => {
+      // Sort reports by date (newest first)
+      const sorted = reports.sort((a, b) => {
+        const [monthA, yearA] = a.id.split('_');
+        const [monthB, yearB] = b.id.split('_');
+        const dateA = new Date(parseInt(yearA), parseInt(monthA) - 1);
+        const dateB = new Date(parseInt(yearB), parseInt(monthB) - 1);
+        return dateB.getTime() - dateA.getTime();
+      });
+      setMonthlyReports(sorted);
+    });
   }, []);
 
   if (!monthlyReports) return null;

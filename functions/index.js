@@ -24,11 +24,12 @@ const reminderText = fs.readFileSync(
 );
 
 const NODEMAILER_PASSWORD = defineString("CONFIG_NODEMAILER_PASS");
+const NODEMAILER_EMAIL = defineString("CONFIG_NODEMAILER_EMAIL");
 
 const mailTransport = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "edificio.juandelcarpio@gmail.com",
+    user: NODEMAILER_EMAIL.value(),
     pass: NODEMAILER_PASSWORD.value(),
   },
 });
@@ -65,11 +66,11 @@ app.post("/email/receipt", async (req, res) => {
   try {
     console.log("sending to " + data.userInfo.email);
     const info = await mailTransport.sendMail({
-      from: "edificio.juandelcarpio@gmail.com",
+      from: NODEMAILER_EMAIL.value(),
       to: data.userInfo.email,
       subject: "Estado de cuenta",
       html: String(recieptText),
-      replyTo: "edificio.juandelcarpio@gmail.com",
+      replyTo: NODEMAILER_EMAIL.value(),
       attachments: [
         {
           filename: data.reciept.name + ".pdf",
@@ -77,8 +78,6 @@ app.post("/email/receipt", async (req, res) => {
         },
       ],
     });
-
-    console.log(info);
     res.status(200).send(info);
   } catch (err) {
     console.error(err);
@@ -91,13 +90,12 @@ app.post("/email/reminder", async (req, res) => {
 
   try {
     const emailPromises = data.emails.map(async (email) => {
-      console.log(email);
       return mailTransport.sendMail({
-        from: "edificio.juandelcarpio@gmail.com",
+        from: NODEMAILER_EMAIL.value(),
         to: email,
         subject: "Recordatorio de pago",
         html: String(reminderText),
-        replyTo: "edificio.juandelcarpio@gmail.com",
+        replyTo: NODEMAILER_EMAIL.value(),
       });
     });
 

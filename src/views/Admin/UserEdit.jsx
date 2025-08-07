@@ -12,28 +12,138 @@ import {
   Select,
   TextField,
   Typography,
+  Box,
+  Card,
+  CardContent,
+  Divider,
+  Avatar,
 } from '@material-ui/core';
+import {
+  Person as PersonIcon,
+  Save as SaveIcon,
+  Cancel as CancelIcon,
+} from '@material-ui/icons';
 import { DatePicker, LocalizationProvider, } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 
 const useStyles = makeStyles((theme) => ({
   container: {
     width: '100%',
-    maxWidth: 700,
+    maxWidth: 800,
+    margin: '0 auto',
   },
-  paper: {
-    backgroundColor: theme.palette.background.paper,
-    border: '2px solid #000',
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 3),
+  card: {
+    borderRadius: theme.spacing(2),
+    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+    border: '1px solid #e2e8f0',
+    overflow: 'visible',
   },
-  input: {
-    width: '90%',
-    margin: '0 5%',
+  header: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    padding: theme.spacing(3),
+    borderRadius: `${theme.spacing(2)}px ${theme.spacing(2)}px 0 0`,
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(2),
+  },
+  headerAvatar: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 50,
+    height: 50,
+  },
+  headerText: {
+    flex: 1,
+  },
+  title: {
+    fontWeight: 600,
+    fontSize: '1.5rem',
+    marginBottom: theme.spacing(0.5),
+  },
+  subtitle: {
+    opacity: 0.9,
+    fontSize: '0.9rem',
+  },
+  content: {
+    padding: theme.spacing(3),
+  },
+  section: {
+    marginBottom: theme.spacing(3),
+    '&:last-child': {
+      marginBottom: 0,
+    },
+  },
+  sectionTitle: {
+    fontWeight: 600,
+    color: '#1a202c',
+    marginBottom: theme.spacing(2),
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+  },
+  textField: {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: theme.spacing(1),
+      transition: 'all 0.3s ease',
+      '&:hover': {
+        boxShadow: '0 2px 8px rgba(102, 126, 234, 0.1)',
+      },
+      '&.Mui-focused': {
+        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)',
+      },
+    },
   },
   formControl: {
-    minWidth: '100%',
-    // maxWidth: 300,
+    width: '100%',
+    '& .MuiOutlinedInput-root': {
+      borderRadius: theme.spacing(1),
+    },
+  },
+  chip: {
+    margin: theme.spacing(0.5, 0.5, 0.5, 0),
+    backgroundColor: '#667eea',
+    color: 'white',
+    '&:hover': {
+      backgroundColor: '#5569d8',
+    },
+  },
+  buttonContainer: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: theme.spacing(2),
+    paddingTop: theme.spacing(2),
+    borderTop: '1px solid #e2e8f0',
+    marginTop: theme.spacing(3),
+  },
+  cancelButton: {
+    color: '#718096',
+    borderColor: '#e2e8f0',
+    '&:hover': {
+      borderColor: '#cbd5e0',
+      backgroundColor: '#f7fafc',
+    },
+  },
+  saveButton: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    fontWeight: 500,
+    borderRadius: theme.spacing(1),
+    textTransform: 'none',
+    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+    '&:hover': {
+      background: 'linear-gradient(135deg, #5569d8 0%, #6a4190 100%)',
+      boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
+    },
+    transition: 'all 0.3s ease',
+  },
+  divider: {
+    margin: theme.spacing(3, 0),
+    backgroundColor: '#e2e8f0',
+  },
+  datePickerContainer: {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: theme.spacing(1),
+    },
   },
 }));
 
@@ -90,162 +200,239 @@ export default function UserEdit({ user, apartments = [], onCancel, onSave }) {
   };
 
   return (
-    <Grid className={classes.container} container spacing={3}>
-      <Grid item xs={12}>
-        <Typography variant='h4'>
-          {isEdit ? 'Edit user info' : 'Add user'}
-        </Typography>
-      </Grid>
-      <Grid item xs={4}>
-        <TextField
-          className={classes.input}
-          variant='outlined'
-          placeholder='Name'
-          value={userInfo.name || ''}
-          label='Name'
-          name='name'
-          onChange={handleChange}
-        />
-      </Grid>
+    <Box className={classes.container}>
+      <Card className={classes.card}>
+        {/* Header */}
+        <Box className={classes.header}>
+          <Avatar className={classes.headerAvatar}>
+            <PersonIcon />
+          </Avatar>
+          <Box className={classes.headerText}>
+            <Typography className={classes.title}>
+              {isEdit ? 'Editar Usuario' : 'Agregar Usuario'}
+            </Typography>
+            <Typography className={classes.subtitle}>
+              {isEdit ? 'Modifica la información del usuario' : 'Completa los datos del nuevo usuario'}
+            </Typography>
+          </Box>
+        </Box>
 
-      <Grid item xs={4}>
-        <TextField
-          className={classes.input}
-          variant='outlined'
-          label='Email'
-          value={userInfo.email}
-          name='email'
-          onChange={handleChange}
-        />
-      </Grid>
-      <Grid item xs={4}>
-        <TextField
-          className={classes.input}
-          variant='outlined'
-          label='Dni/Ruc'
-          value={userInfo.dni_ruc}
-          name='dni_ruc'
-          onChange={handleChange}
-        />
-      </Grid>
+        {/* Content */}
+        <Box className={classes.content}>
+          {/* Basic Information */}
+          <Box className={classes.section}>
+            <Typography variant="h6" className={classes.sectionTitle}>
+              Información Básica
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  variant='outlined'
+                  placeholder='Nombre completo'
+                  value={userInfo.name || ''}
+                  label='Nombre'
+                  name='name'
+                  onChange={handleChange}
+                  className={classes.textField}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  variant='outlined'
+                  label='Email'
+                  type='email'
+                  value={userInfo.email}
+                  name='email'
+                  onChange={handleChange}
+                  className={classes.textField}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  variant='outlined'
+                  label='DNI/RUC'
+                  value={userInfo.dni_ruc}
+                  name='dni_ruc'
+                  onChange={handleChange}
+                  className={classes.textField}
+                />
+              </Grid>
+            </Grid>
+          </Box>
 
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Grid item xs={6}>
-          <DatePicker
-            value={new Date(userInfo.contract_start)}
-            className={classes.input}
-            onChange={(val) => handleDate(val, 'contract_start')}
-            label='Contract start'
-          />
-          <DatePicker
-            value={new Date(userInfo.contract_end)}
-            className={classes.input}
-            label='Contract end'
-            onChange={(val) => handleDate(val, 'contract_end')}
-          />
-        </Grid>
-      </LocalizationProvider>
+          <Divider className={classes.divider} />
 
-      <Grid item xs={6}>
-        <FormControl className={classes.formControl}>
-          <InputLabel id='services'>Services</InputLabel>
-          <Select
-            labelId='services'
-            id='services'
-            multiple
-            onChange={(e) => {
-              setUserInfo((s) => ({ ...s, services: e.target.value }));
-            }}
-            variant='outlined'
-            value={userInfo.services || []}
-            input={<Input id='select-multiple-chip' />}
-            renderValue={(selected) => (
-              <div className={classes.chips}>
-                {selected.map((value) => (
-                  <Chip key={value} label={value} className={classes.chip} />
-                ))}
-              </div>
-            )}
-            MenuProps={MenuProps}
-          >
-            {services.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Grid>
+          {/* Contact Information */}
+          <Box className={classes.section}>
+            <Typography variant="h6" className={classes.sectionTitle}>
+              Información de Contacto
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  variant='outlined'
+                  type='tel'
+                  placeholder='Teléfono principal'
+                  value={userInfo.tel || ''}
+                  label='Teléfono'
+                  name='tel'
+                  onChange={handleChange}
+                  className={classes.textField}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  variant='outlined'
+                  type='tel'
+                  placeholder='Teléfono de emergencia'
+                  value={userInfo.telEmergency || ''}
+                  label='Teléfono de Emergencia'
+                  name='telEmergency'
+                  onChange={handleChange}
+                  className={classes.textField}
+                />
+              </Grid>
+            </Grid>
+          </Box>
 
-      <Grid item xs={4}>
-        <TextField
-          className={classes.input}
-          variant='outlined'
-          type='number'
-          placeholder='Phone'
-          value={userInfo.tel || ''}
-          label='Phone'
-          name='tel'
-          onChange={handleChange}
-        />
-      </Grid>
-      <Grid item xs={4}>
-        <TextField
-          className={classes.input}
-          variant='outlined'
-          type='number'
-          placeholder='Phone Emergency'
-          value={userInfo.telEmergency || ''}
-          label='Phone Emergency'
-          name='telEmergency'
-          onChange={handleChange}
-        />
-      </Grid>
-      <Grid item xs={2}>
-        <TextField
-          className={classes.input}
-          variant='outlined'
-          type='number'
-          placeholder='Debt'
-          value={userInfo.debt || ''}
-          label='Debt'
-          name='debt'
-          onChange={handleChange}
-        />
-      </Grid>
-      <Grid item xs={2}>
-        <TextField
-          className={classes.input}
-          variant='outlined'
-          type='number'
-          placeholder='Deposit'
-          value={userInfo.deposit || ''}
-          label='Deposit'
-          name='deposit'
-          onChange={handleChange}
-        />
-      </Grid>
-      <Grid item xs={6} />
-      <Grid item xs={3}>
-        <Button
-          onClick={onCancel}
-          className={classes.input}
-          variant='contained'
-        >
-          Cancel
-        </Button>
-      </Grid>
-      <Grid item xs={3}>
-        <Button
-          onClick={() => onSave(userInfo, isEdit)}
-          className={classes.input}
-          variant='contained'
-          color='primary'
-        >
-          Save
-        </Button>
-      </Grid>
-    </Grid>
+          <Divider className={classes.divider} />
+
+          {/* Contract Information */}
+          <Box className={classes.section}>
+            <Typography variant="h6" className={classes.sectionTitle}>
+              Información del Contrato
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <Box className={classes.datePickerContainer}>
+                    <DatePicker
+                      value={new Date(userInfo.contract_start)}
+                      onChange={(val) => handleDate(val, 'contract_start')}
+                      label='Inicio del Contrato'
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          variant: 'outlined'
+                        }
+                      }}
+                    />
+                  </Box>
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <Box className={classes.datePickerContainer}>
+                    <DatePicker
+                      value={new Date(userInfo.contract_end)}
+                      label='Fin del Contrato'
+                      onChange={(val) => handleDate(val, 'contract_end')}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          variant: 'outlined'
+                        }
+                      }}
+                    />
+                  </Box>
+                </LocalizationProvider>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Divider className={classes.divider} />
+
+          {/* Services and Financial */}
+          <Box className={classes.section}>
+            <Typography variant="h6" className={classes.sectionTitle}>
+              Servicios y Finanzas
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <FormControl className={classes.formControl} variant='outlined'>
+                  <InputLabel id='services'>Servicios</InputLabel>
+                  <Select
+                    labelId='services'
+                    id='services'
+                    multiple
+                    onChange={(e) => {
+                      setUserInfo((s) => ({ ...s, services: e.target.value }));
+                    }}
+                    value={userInfo.services || []}
+                    label='Servicios'
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map((value) => (
+                          <Chip key={value} label={value} className={classes.chip} size="small" />
+                        ))}
+                      </Box>
+                    )}
+                    MenuProps={MenuProps}
+                  >
+                    {services.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <TextField
+                  fullWidth
+                  variant='outlined'
+                  type='number'
+                  placeholder='0'
+                  value={userInfo.debt || ''}
+                  label='Deuda (S/)'
+                  name='debt'
+                  onChange={handleChange}
+                  className={classes.textField}
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <TextField
+                  fullWidth
+                  variant='outlined'
+                  type='number'
+                  placeholder='0'
+                  value={userInfo.deposit || ''}
+                  label='Depósito (S/)'
+                  name='deposit'
+                  onChange={handleChange}
+                  className={classes.textField}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Action Buttons */}
+          <Box className={classes.buttonContainer}>
+            <Button
+              onClick={onCancel}
+              variant='outlined'
+              className={classes.cancelButton}
+              startIcon={<CancelIcon />}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => onSave(userInfo, isEdit)}
+              variant='contained'
+              className={classes.saveButton}
+              startIcon={<SaveIcon />}
+            >
+              {isEdit ? 'Actualizar' : 'Guardar'}
+            </Button>
+          </Box>
+        </Box>
+      </Card>
+    </Box>
   );
 }
 

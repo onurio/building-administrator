@@ -109,11 +109,19 @@ export default function SendRecieptsEmail({
               variant="outlined"
               value={selectedMonth}
             >
-              {recieptsMonths.map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
+              {recieptsMonths
+                .sort((a, b) => {
+                  const [monthA, yearA] = a.split('_');
+                  const [monthB, yearB] = b.split('_');
+                  const dateA = new Date(parseInt(yearA), parseInt(monthA) - 1);
+                  const dateB = new Date(parseInt(yearB), parseInt(monthB) - 1);
+                  return dateB.getTime() - dateA.getTime(); // Newest first
+                })
+                .map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
         </Grid>
