@@ -4,12 +4,14 @@ import {
   Button,
   Chip,
   FormControl,
+  FormControlLabel,
   Grid,
   Input,
   InputLabel,
   makeStyles,
   MenuItem,
   Select,
+  Switch,
   TextField,
   Typography,
   Box,
@@ -174,6 +176,8 @@ const initialUser = {
   reciepts: [],
   services: [],
   shared_files: [],
+  needs_tax_docs: false,
+  tax_documents: [],
 };
 
 let services = [
@@ -406,6 +410,29 @@ export default function UserEdit({ user, apartments = [], onCancel, onSave }) {
                   name='deposit'
                   onChange={handleChange}
                   className={classes.textField}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Divider className={classes.divider} />
+
+          {/* Tax Documents Configuration */}
+          <Box className={classes.section}>
+            <Typography variant="h6" className={classes.sectionTitle}>
+              Documentos Tributarios
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={userInfo.needs_tax_docs || false}
+                      onChange={(e) => setUserInfo(s => ({ ...s, needs_tax_docs: e.target.checked }))}
+                      color="primary"
+                    />
+                  }
+                  label="Requiere documentos tributarios (SUNAT) para sus recibos"
                 />
               </Grid>
             </Grid>

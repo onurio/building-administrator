@@ -4,11 +4,13 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import Users from "./Users";
 import Apartments from "./Apartments";
 import Reciepts from "./Reciepts";
+import Payments from "./Payments";
 import { getApartments, getServices, getUsers } from "../../utils/dbRequests";
 import Services from "./Services";
 import PeopleIcon from "@material-ui/icons/People";
 import ApartmentIcon from "@material-ui/icons/Apartment";
 import ReceiptIcon from "@material-ui/icons/Receipt";
+import PaymentIcon from "@material-ui/icons/Payment";
 import LocalLaundryServiceIcon from "@material-ui/icons/LocalLaundryService";
 import LaundryUseView from "./LaundryUseView";
 import WaterAndElectricityEditor from "./WaterAndElectricityEditor";
@@ -49,6 +51,12 @@ let sideItems = [
     text: "Reciepts",
     link: "reciepts",
     icon: <ReceiptIcon />,
+  },
+  {
+    key: "payments",
+    text: "Pagos",
+    link: "payments",
+    icon: <PaymentIcon />,
   },
   {
     key: "waterAndElectricity",
@@ -133,6 +141,7 @@ export default function Admin({ auth, storage }) {
           <Route path="/users" element={<Users users={users} refresh={refresh} path="/users" auth={auth} storage={storage} />} />
           <Route path="/apartments" element={<Apartments apartments={apartments} users={users} refresh={refresh} path="/apartments" />} />
           <Route path="/reciepts" element={<Reciepts apartments={apartments} users={users} storage={storage} services={services} refresh={refresh} path="/reciepts" />} />
+          <Route path="/payments" element={<Payments apartments={apartments} users={users} storage={storage} refresh={refresh} path="/payments" />} />
           <Route path="/waterandelectricity" element={<WaterAndElectricityEditor apartments={apartments} users={users} services={services} refresh={refresh} path="/waterandelectricity" />} />
         </Routes>
       </Dashboard>

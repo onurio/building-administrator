@@ -20,9 +20,10 @@ import {
   Home as HomeIcon,
   Person as PersonIcon,
 } from "@material-ui/icons";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-import { saveApartment } from "../../utils/dbRequests";
+import { saveApartment, getMonthlyReports } from "../../utils/dbRequests";
+import UtilityUsageChart from "./components/UtilityUsageChart";
 import Loader from "../../components/Loader";
 
 const useStyles = makeStyles((theme) => ({
@@ -202,9 +203,24 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function WaterAndElectricityEditor({ apartments, refresh }) {
+export default function WaterAndElectricityEditor({ apartments, refresh, services }) {
   const classes = useStyles();
   const [isCalculating, setIsCalculating] = useState(false);
+  const [monthlyReports, setMonthlyReports] = useState([]);
+
+  // Fetch monthly reports data
+  useEffect(() => {
+    const fetchMonthlyReports = async () => {
+      try {
+        const reports = await getMonthlyReports();
+        setMonthlyReports(reports);
+      } catch (error) {
+        console.error('Error fetching monthly reports:', error);
+      }
+    };
+
+    fetchMonthlyReports();
+  }, []);
 
   const updateApartment = debounce(async (apt) => {
     setIsCalculating(true);
@@ -257,6 +273,9 @@ export default function WaterAndElectricityEditor({ apartments, refresh }) {
         </Box>
         {isCalculating && <LinearProgress style={{ marginTop: 16 }} />}
       </Card>
+
+      {/* Usage Chart */}
+      <UtilityUsageChart monthlyReports={monthlyReports} />
 
       {/* Apartments Grid */}
       <Grid container spacing={3}>

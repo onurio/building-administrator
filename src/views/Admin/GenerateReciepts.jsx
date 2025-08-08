@@ -136,11 +136,21 @@ export default function GenerateReciepts({
       if (!reciept) return undefined;
       const onFinish = async (url) => {
         const newReciepts = [...reciept.user.reciepts];
+        const receiptData = generateRecieptInfo(
+          apartments.find(apt => apt.tenant.id === reciept.user.id),
+          reciept.user,
+          services,
+          water,
+          electricity,
+          calculateLaundryUsage(await getLaundryUser(reciept.user.id), monthYear)
+        );
+        
         newReciepts.push({
           date: date.toISOString(),
           name: monthYear,
           url,
           paid: false,
+          total: receiptData.total,
         });
         const updatedUser = { ...reciept.user, reciepts: newReciepts };
         await updateUser(updatedUser);

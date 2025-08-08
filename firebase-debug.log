@@ -1,0 +1,79 @@
+[debug] [2025-08-08T01:45:00.560Z] ----------------------------------------------------------------------
+[debug] [2025-08-08T01:45:00.561Z] Command:       /Users/omrinuri/.asdf/installs/nodejs/20.11.0/bin/node /Users/omrinuri/.asdf/installs/nodejs/20.11.0/bin/firebase deploy
+[debug] [2025-08-08T01:45:00.562Z] CLI Version:   14.3.1
+[debug] [2025-08-08T01:45:00.562Z] Platform:      darwin
+[debug] [2025-08-08T01:45:00.562Z] Node Version:  v20.11.0
+[debug] [2025-08-08T01:45:00.562Z] Time:          Thu Aug 07 2025 20:45:00 GMT-0500 (Peru Standard Time)
+[debug] [2025-08-08T01:45:00.562Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-08-08T01:45:00.641Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-08-08T01:45:00.641Z] > authorizing via signed-in user (omrinuri@gmail.com)
+[debug] [2025-08-08T01:45:00.641Z] [iam] checking project edificio-jdc for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]
+[debug] [2025-08-08T01:45:00.642Z] Checked if tokens are valid: false, expires at: 1754543754266
+[debug] [2025-08-08T01:45:00.642Z] Checked if tokens are valid: false, expires at: 1754543754266
+[debug] [2025-08-08T01:45:00.642Z] > refreshing access token with scopes: []
+[debug] [2025-08-08T01:45:00.643Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-08-08T01:45:00.643Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-08-08T01:45:01.296Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-08-08T01:45:01.296Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-08-08T01:45:01.308Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/edificio-jdc:testIamPermissions [none]
+[debug] [2025-08-08T01:45:01.308Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/edificio-jdc:testIamPermissions x-goog-quota-user=projects/edificio-jdc
+[debug] [2025-08-08T01:45:01.308Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/edificio-jdc:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2025-08-08T01:45:02.382Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/edificio-jdc:testIamPermissions 200
+[debug] [2025-08-08T01:45:02.382Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/edificio-jdc:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2025-08-08T01:45:02.383Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:02.383Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:02.383Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/edificio-jdc/serviceAccounts/edificio-jdc@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2025-08-08T01:45:02.383Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/edificio-jdc/serviceAccounts/edificio-jdc@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2025-08-08T01:45:03.413Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/edificio-jdc/serviceAccounts/edificio-jdc@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2025-08-08T01:45:03.413Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/edificio-jdc/serviceAccounts/edificio-jdc@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2025-08-08T01:45:03.414Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:03.414Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:03.415Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/edificio-jdc [none]
+[debug] [2025-08-08T01:45:04.290Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/edificio-jdc 200
+[debug] [2025-08-08T01:45:04.290Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/edificio-jdc {"projectId":"edificio-jdc","projectNumber":"874057296656","displayName":"edificio-jdc","name":"projects/edificio-jdc","resources":{"hostingSite":"edificio-jdc","locationId":"southamerica-east1"},"state":"ACTIVE","etag":"1_66b1c9f3-734a-459e-a68c-618b43769e95"}
+[info] 
+[info] === Deploying to 'edificio-jdc'...
+[info] 
+[info] i  deploying storage, firestore, functions, hosting 
+[info] Running command: npm --prefix "$RESOURCE_DIR" run lint
+[info] ✔  functions: Finished running predeploy script. 
+[info] i  storage: ensuring required API firebasestorage.googleapis.com is enabled... 
+[debug] [2025-08-08T01:45:04.813Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:04.813Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:04.813Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/edificio-jdc/services/firebasestorage.googleapis.com [none]
+[debug] [2025-08-08T01:45:04.813Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/edificio-jdc/services/firebasestorage.googleapis.com x-goog-quota-user=projects/edificio-jdc
+[debug] [2025-08-08T01:45:06.177Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/edificio-jdc/services/firebasestorage.googleapis.com 200
+[debug] [2025-08-08T01:45:06.177Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/edificio-jdc/services/firebasestorage.googleapis.com [omitted]
+[info] ✔  storage: required API firebasestorage.googleapis.com is enabled 
+[debug] [2025-08-08T01:45:06.178Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:06.178Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:06.178Z] >>> [apiv2][query] GET https://firebasestorage.googleapis.com/v1alpha/projects/edificio-jdc/defaultBucket [none]
+[debug] [2025-08-08T01:45:07.162Z] <<< [apiv2][status] GET https://firebasestorage.googleapis.com/v1alpha/projects/edificio-jdc/defaultBucket 200
+[debug] [2025-08-08T01:45:07.162Z] <<< [apiv2][body] GET https://firebasestorage.googleapis.com/v1alpha/projects/edificio-jdc/defaultBucket {"name":"projects/edificio-jdc/defaultBucket","location":"SOUTHAMERICA-EAST1","bucket":{"name":"projects/edificio-jdc/buckets/edificio-jdc.appspot.com"},"storageClass":"STANDARD"}
+[info] i  firebase.storage: checking storage.rules for compilation errors... 
+[debug] [2025-08-08T01:45:07.165Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:07.165Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:07.166Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/edificio-jdc:test [none]
+[debug] [2025-08-08T01:45:07.166Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/edificio-jdc:test [omitted]
+[debug] [2025-08-08T01:45:07.927Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/edificio-jdc:test 200
+[debug] [2025-08-08T01:45:07.928Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/edificio-jdc:test {}
+[info] ✔  firebase.storage: rules file storage.rules compiled successfully 
+[info] i  firestore: reading indexes from firestore.indexes.json... 
+[info] i  cloud.firestore: checking firestore.rules for compilation errors... 
+[debug] [2025-08-08T01:45:07.930Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:07.930Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:07.930Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/edificio-jdc:test [none]
+[debug] [2025-08-08T01:45:07.930Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/edificio-jdc:test [omitted]
+[debug] [2025-08-08T01:45:08.274Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/edificio-jdc:test 200
+[debug] [2025-08-08T01:45:08.274Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/edificio-jdc:test {}
+[info] ✔  cloud.firestore: rules file firestore.rules compiled successfully 
+[debug] [2025-08-08T01:45:08.276Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:08.276Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:08.276Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/edificio-jdc/services/cloudresourcemanager.googleapis.com [none]
+[debug] [2025-08-08T01:45:08.276Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/edificio-jdc/services/cloudresourcemanager.googleapis.com x-goog-quota-user=projects/edificio-jdc
+[debug] [2025-08-08T01:45:08.844Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/edificio-jdc/services/cloudresourcemanager.googleapis.com 200
+[debug] [2025-08-08T01:45:08.844Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/edificio-jdc/services/cloudresourcemanager.googleapis.com [omitted]
+[debug] [2025-08-08T01:45:08.844Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:08.844Z] Checked if tokens are valid: true, expires at: 1754621100297
+[debug] [2025-08-08T01:45:08.844Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/edificio-jdc [none]

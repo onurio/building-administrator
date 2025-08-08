@@ -206,43 +206,39 @@ export default function Apartments({ users, apartments, refresh }) {
       ),
     },
     {
-      field: 'edit',
-      headerName: 'Editar',
+      field: 'actions',
+      headerName: 'Acciones',
       sortable: false,
-      width: 90,
+      width: 140,
       renderCell: (params) => (
-        <IconButton
-          color='primary'
-          size='small'
-          onClick={() => openAdd(apartments[params.value])}
-        >
-          <EditIcon fontSize="small" />
-        </IconButton>
-      ),
-    },
-    {
-      field: 'id',
-      headerName: 'Eliminar',
-      sortable: false,
-      width: 100,
-      renderCell: (params) => (
-        <IconButton
-          color='secondary'
-          size='small'
-          onClick={() =>
-            handleModal(
-              <DeleteModal
-                onCancel={() => handleModal()}
-                onSave={() => {
-                  onDelete(params.value);
-                  handleModal();
-                }}
-              />
-            )
-          }
-        >
-          <DeleteIcon fontSize="small" />
-        </IconButton>
+        <Box style={{ display: 'flex', gap: '4px' }}>
+          <IconButton
+            color='primary'
+            size='small'
+            onClick={() => openAdd(params.row)}
+            title="Editar"
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton
+            color='secondary'
+            size='small'
+            onClick={() =>
+              handleModal(
+                <DeleteModal
+                  onCancel={() => handleModal()}
+                  onSave={() => {
+                    onDelete(params.row.id);
+                    handleModal();
+                  }}
+                />
+              )
+            }
+            title="Eliminar"
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Box>
       ),
     },
   ];
@@ -327,7 +323,7 @@ export default function Apartments({ users, apartments, refresh }) {
 
       {/* Data Table Card */}
       <Card className={classes.dataTableCard}>
-        <DataTable rows={apartments} columns={columns} />
+        <DataTable rows={apartments.sort((a, b) => a.name.localeCompare(b.name))} columns={columns} />
       </Card>
     </Box>
   );

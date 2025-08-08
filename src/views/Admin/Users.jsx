@@ -195,6 +195,12 @@ export default function Users({ storage, auth, users, refresh }) {
       field: "apartment",
       headerName: "Apartamento",
       width: 120,
+      sortable: true,
+      sortComparator: (v1, v2) => {
+        const name1 = v1?.name || "ZZZ"; // Put "No asignado" at the end
+        const name2 = v2?.name || "ZZZ";
+        return name1.localeCompare(name2);
+      },
       renderCell: (params) => (
         <Chip
           label={params.value?.name || "No asignado"}
@@ -289,43 +295,39 @@ export default function Users({ storage, auth, users, refresh }) {
       ),
     },
     {
-      field: "edit",
-      headerName: "Editar",
+      field: "actions",
+      headerName: "Acciones",
       sortable: false,
-      width: 100,
+      width: 140,
       renderCell: (params) => (
-        <IconButton
-          color="primary"
-          size="small"
-          onClick={() => openAdd(users[params.value])}
-        >
-          <EditIcon />
-        </IconButton>
-      ),
-    },
-    {
-      field: "id",
-      headerName: "Eliminar",
-      sortable: false,
-      width: 100,
-      renderCell: (params) => (
-        <IconButton
-          color="secondary"
-          size="small"
-          onClick={() =>
-            handleModal(
-              <DeleteModal
-                onCancel={() => handleModal()}
-                onSave={() => {
-                  onDelete(params.value);
-                  handleModal();
-                }}
-              />
-            )
-          }
-        >
-          <DeleteIcon />
-        </IconButton>
+        <Box style={{ display: 'flex', gap: '4px' }}>
+          <IconButton
+            color="primary"
+            size="small"
+            onClick={() => openAdd(params.row)}
+            title="Editar"
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="secondary"
+            size="small"
+            onClick={() =>
+              handleModal(
+                <DeleteModal
+                  onCancel={() => handleModal()}
+                  onSave={() => {
+                    onDelete(params.row.id);
+                    handleModal();
+                  }}
+                />
+              )
+            }
+            title="Eliminar"
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
       ),
     },
   ];
@@ -442,7 +444,7 @@ export default function Users({ storage, auth, users, refresh }) {
 
       {/* Data Table Card */}
       <Card className={classes.dataTableCard}>
-        <DataTable rows={users} columns={columns} />
+        <DataTable rows={users.sort((a, b) => a.name.localeCompare(b.name))} columns={columns} />
       </Card>
     </Box>
   );
