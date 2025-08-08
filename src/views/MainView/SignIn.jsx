@@ -42,6 +42,11 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     background: "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)",
     padding: theme.spacing(2),
+    [theme.breakpoints.down('xs')]: {
+      padding: theme.spacing(1),
+      alignItems: "center",
+      justifyContent: "center",
+    },
   },
   paper: {
     padding: theme.spacing(5),
@@ -55,6 +60,12 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.down("sm")]: {
       padding: theme.spacing(3),
     },
+    [theme.breakpoints.down('xs')]: {
+      padding: theme.spacing(2),
+      margin: 0,
+      borderRadius: theme.spacing(1),
+      maxWidth: '100%',
+    },
   },
   logo: {
     width: 80,
@@ -66,20 +77,37 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     marginBottom: theme.spacing(3),
     boxShadow: "0 4px 20px rgba(25, 118, 210, 0.3)",
+    [theme.breakpoints.down('xs')]: {
+      width: 60,
+      height: 60,
+      marginBottom: theme.spacing(2),
+    },
   },
   logoIcon: {
     color: "white",
     fontSize: 32,
+    [theme.breakpoints.down('xs')]: {
+      fontSize: 24,
+    },
   },
   title: {
     fontWeight: 600,
     color: "#333",
     marginBottom: theme.spacing(1),
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.75rem',
+      marginBottom: theme.spacing(0.5),
+    },
   },
   subtitle: {
     color: theme.palette.text.secondary,
     marginBottom: theme.spacing(4),
     textAlign: "center",
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '0.9rem',
+      marginBottom: theme.spacing(2),
+      lineHeight: 1.3,
+    },
   },
   form: {
     width: "100%",
@@ -95,6 +123,12 @@ const useStyles = makeStyles((theme) => ({
       },
       "&.Mui-focused": {
         boxShadow: "0 4px 12px rgba(25, 118, 210, 0.2)",
+      },
+    },
+    [theme.breakpoints.down('xs')]: {
+      marginBottom: theme.spacing(1.5),
+      '& .MuiInputBase-input': {
+        padding: '14px',
       },
     },
   },
@@ -114,6 +148,11 @@ const useStyles = makeStyles((theme) => ({
       boxShadow: "0 6px 20px rgba(25, 118, 210, 0.4)",
     },
     transition: "all 0.3s ease",
+    [theme.breakpoints.down('xs')]: {
+      marginTop: theme.spacing(2),
+      padding: '14px 20px',
+      fontSize: '0.95rem',
+    },
   },
   secondaryButton: {
     marginBottom: theme.spacing(2),
@@ -130,12 +169,22 @@ const useStyles = makeStyles((theme) => ({
       borderColor: "#1565c0",
     },
     transition: "all 0.3s ease",
+    [theme.breakpoints.down('xs')]: {
+      padding: '10px 20px',
+      fontSize: '0.85rem',
+      marginBottom: theme.spacing(1),
+    },
   },
   footerText: {
     marginTop: theme.spacing(2),
     color: theme.palette.text.secondary,
     textAlign: "center",
     fontSize: "0.8rem",
+    [theme.breakpoints.down('xs')]: {
+      marginTop: theme.spacing(1),
+      fontSize: '0.75rem',
+      lineHeight: 1.2,
+    },
   },
   googleButton: {
     marginTop: theme.spacing(1),
@@ -154,6 +203,11 @@ const useStyles = makeStyles((theme) => ({
       boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
     },
     transition: "all 0.3s ease",
+    [theme.breakpoints.down('xs')]: {
+      padding: '14px 20px',
+      fontSize: '0.95rem',
+      marginBottom: theme.spacing(1.5),
+    },
   },
   googleButtonDisabled: {
     backgroundColor: "#f5f5f5 !important",
@@ -173,6 +227,9 @@ const useStyles = makeStyles((theme) => ({
       padding: theme.spacing(0, 2),
       color: theme.palette.text.secondary,
       fontSize: "0.9rem",
+    },
+    [theme.breakpoints.down('xs')]: {
+      margin: theme.spacing(1.5, 0),
     },
   },
   alert: {
@@ -221,7 +278,7 @@ export default function SignIn({ login, resetPassword }) {
   return (
     <ThemeProvider theme={theme}>
       <Box className={classes.root}>
-        <Container maxWidth="sm">
+        <Box style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
           <Paper elevation={24} className={classes.paper}>
             <Box className={classes.logo}>
               <HomeIcon className={classes.logoIcon} />
@@ -322,7 +379,7 @@ export default function SignIn({ login, resetPassword }) {
               Portal seguro para residentes del edificio
             </Typography>
           </Paper>
-        </Container>
+        </Box>
       </Box>
     </ThemeProvider>
   );

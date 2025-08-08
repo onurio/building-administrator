@@ -19,6 +19,8 @@ import {
   Menu as MenuIcon,
   ExitToApp as ExitToAppIcon,
   Settings as AdminIcon,
+  Home as HomeIcon,
+  Person as PersonIcon,
 } from '@material-ui/icons';
 import { makeStyles, useTheme, createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import SimpleModal from './components/SimpleModal';
@@ -26,14 +28,14 @@ import { Link, useLocation } from 'react-router-dom';
 
 const drawerWidth = 280;
 
-const adminTheme = createMuiTheme({
+const createAppTheme = (isAdmin) => createMuiTheme({
   palette: {
     primary: {
-      main: '#1976d2',
-      dark: '#1565c0',
+      main: isAdmin ? '#1976d2' : '#2563eb',
+      dark: isAdmin ? '#1565c0' : '#1d4ed8',
     },
     secondary: {
-      main: '#dc004e',
+      main: isAdmin ? '#dc004e' : '#059669',
     },
     background: {
       default: '#f8fafc',
@@ -45,49 +47,62 @@ const adminTheme = createMuiTheme({
     },
   },
   typography: {
-    fontFamily: '"Montserrat", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Montserrat", "Roboto", "Helvetica", "Arial", sans-serif',
     h6: {
       fontWeight: 600,
     },
+    body1: {
+      lineHeight: 1.6,
+    },
+  },
+  shape: {
+    borderRadius: 12,
   },
   overrides: {
     MuiDrawer: {
       paper: {
-        background: 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)',
+        background: isAdmin 
+          ? 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)'
+          : 'linear-gradient(180deg, #2563eb 0%, #1e40af 50%, #1d4ed8 100%)',
         color: 'white',
       },
     },
     MuiListItem: {
       root: {
         '&$selected': {
-          backgroundColor: 'rgba(255, 255, 255, 0.15)',
+          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+          borderLeft: '4px solid rgba(255, 255, 255, 0.8)',
           '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            backgroundColor: 'rgba(255, 255, 255, 0.25)',
           },
         },
         '&:hover': {
           backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          transform: 'translateX(4px)',
         },
-        margin: '4px 8px',
-        borderRadius: '8px',
-        transition: 'all 0.3s ease',
+        margin: '6px 12px',
+        borderRadius: '12px',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        padding: '12px 16px',
       },
       button: {
         '&:hover': {
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          backgroundColor: 'transparent',
         },
       },
     },
     MuiListItemIcon: {
       root: {
         color: 'white',
-        minWidth: '40px',
+        minWidth: '44px',
+        fontSize: '1.25rem',
       },
     },
     MuiListItemText: {
       primary: {
         color: 'white',
         fontWeight: 500,
+        fontSize: '0.95rem',
       },
     },
   },
@@ -138,9 +153,8 @@ const useStyles = makeStyles((theme) => ({
   },
   drawerPaper: {
     width: drawerWidth,
-    background: 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)',
     borderRight: 'none',
-    boxShadow: '4px 0 6px -1px rgba(0, 0, 0, 0.1)',
+    boxShadow: '4px 0 12px -2px rgba(0, 0, 0, 0.12), 0 4px 8px -2px rgba(0, 0, 0, 0.08)',
   },
   content: {
     flexGrow: 1,
@@ -148,7 +162,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: '#f8fafc',
     minHeight: '100vh',
     [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing(1),
+      padding: theme.spacing(0.25),
     },
   },
   logoContainer: {
@@ -159,12 +173,14 @@ const useStyles = makeStyles((theme) => ({
     color: 'white',
   },
   logoAvatar: {
-    width: 60,
-    height: 60,
+    width: 64,
+    height: 64,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    marginBottom: theme.spacing(1),
-    fontSize: '1.5rem',
+    marginBottom: theme.spacing(1.5),
+    fontSize: '1.75rem',
     fontWeight: 'bold',
+    backdropFilter: 'blur(10px)',
+    border: '2px solid rgba(255, 255, 255, 0.1)',
   },
   logoText: {
     fontSize: '1.1rem',
@@ -202,10 +218,16 @@ const useStyles = makeStyles((theme) => ({
   },
   contentWrapper: {
     backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    padding: theme.spacing(3),
+    borderRadius: '16px',
+    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+    padding: theme.spacing(4),
     margin: theme.spacing(1, 0),
+    border: '1px solid rgba(0, 0, 0, 0.05)',
+    [theme.breakpoints.down('sm')]: {
+      borderRadius: '4px',
+      padding: theme.spacing(1),
+      margin: theme.spacing(0.25, 0),
+    },
   },
 }));
 
@@ -215,6 +237,8 @@ function Dashboard({
   window,
   sideItems = [],
   children,
+  isAdmin = false,
+  userInfo = null,
 }) {
   const classes = useStyles();
   const theme = useTheme();
@@ -229,6 +253,10 @@ function Dashboard({
     if (link === '/admin' || link === '/admin/') {
       return location.pathname === '/admin' || location.pathname === '/admin/';
     }
+    // Exact match for root path to avoid always being active
+    if (link === '/') {
+      return location.pathname === '/';
+    }
     return location.pathname.includes(link);
   };
 
@@ -237,14 +265,19 @@ function Dashboard({
       <Box className={classes.toolbar}>
         <Box className={classes.logoContainer}>
           <Avatar className={classes.logoAvatar}>
-            <AdminIcon />
+            {isAdmin ? <AdminIcon /> : <HomeIcon />}
           </Avatar>
           <Typography className={classes.logoText}>
-            Admin Panel
+            {isAdmin ? 'Admin Panel' : 'Portal Residentes'}
           </Typography>
           <Typography className={classes.logoSubtext}>
             Juan del Carpio 104
           </Typography>
+          {userInfo && !isAdmin && (
+            <Typography className={classes.logoSubtext} style={{ marginTop: 8, fontSize: '0.75rem' }}>
+              {userInfo.name} - Apt. {userInfo.apartment?.name || 'N/A'}
+            </Typography>
+          )}
         </Box>
       </Box>
       
@@ -284,8 +317,10 @@ function Dashboard({
   const container =
     window !== undefined ? () => window().document.body : undefined;
 
+  const appTheme = createAppTheme(isAdmin);
+
   return (
-    <ThemeProvider theme={adminTheme}>
+    <ThemeProvider theme={appTheme}>
       <div className={classes.root}>
         <CssBaseline />
         <AppBar position='fixed' className={classes.appBar} elevation={0}>

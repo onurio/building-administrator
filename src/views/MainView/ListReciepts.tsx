@@ -28,6 +28,11 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: theme.spacing(2),
     maxHeight: "70vh",
     overflow: "auto",
+    [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(0.5),
+      maxHeight: "85vh",
+      borderRadius: theme.spacing(1),
+    },
   },
   headerCard: {
     background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -35,31 +40,51 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(3),
     borderRadius: theme.spacing(2),
     boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+    [theme.breakpoints.down('sm')]: {
+      marginBottom: theme.spacing(1.5),
+      borderRadius: theme.spacing(1.5),
+    },
   },
   headerContent: {
     display: "flex",
     alignItems: "center",
     padding: theme.spacing(2, 3),
+    [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(1.5, 2),
+    },
   },
   headerIcon: {
     fontSize: "2rem",
     marginRight: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
+      fontSize: "1.5rem",
+      marginRight: theme.spacing(1.5),
+    },
   },
   title: {
     fontWeight: 600,
     color: "white",
     margin: 0,
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '1.25rem',
+    },
   },
   subtitle: {
     fontWeight: 400,
     color: "rgba(255, 255, 255, 0.9)",
     fontSize: "0.9rem",
     margin: 0,
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.8rem',
+    },
   },
   dataTableCard: {
     borderRadius: theme.spacing(2),
     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
     overflow: "hidden",
+    [theme.breakpoints.down('sm')]: {
+      borderRadius: theme.spacing(1.5),
+    },
   },
   downloadButton: {
     backgroundColor: "rgba(102, 126, 234, 0.1)",
@@ -115,56 +140,74 @@ export default function Reciepts({
     await refresh();
   };
 
+  // Dynamic column configuration for mobile
+  const isMobile = window.innerWidth <= 768;
+  
   const columns = [
     {
       field: "url",
-      headerName: allowEdit ? "Descargar" : "Descargar",
-      width: 120,
+      headerName: "Descargar",
+      width: isMobile ? 80 : 120,
       sortable: false,
       renderCell: (params) => {
         return (
           <IconButton
             className={classes.downloadButton}
-            size="small"
+            size={isMobile ? "small" : "small"}
             onClick={() => {
               downloadFileFromStorage(params.row);
             }}
             title="Descargar recibo"
           >
-            <CloudDownloadRounded fontSize="small" />
+            <CloudDownloadRounded fontSize={isMobile ? "small" : "small"} />
           </IconButton>
         );
       },
     },
     {
       field: "date",
-      headerName: allowEdit ? "Fecha" : "Fecha",
-      width: 150,
+      headerName: "Fecha",
+      width: isMobile ? 100 : 150,
       renderCell: (params) => {
+        const date = new Date(params.value).toLocaleDateString('es-ES');
         return (
           <Chip
-            label={new Date(params.value).toLocaleDateString('es-ES')}
+            label={isMobile ? date.slice(0, 5) : date} // Show shorter date on mobile
             size="small"
-            style={{ backgroundColor: '#e0e7ff', color: '#3730a3' }}
+            style={{ 
+              backgroundColor: '#e0e7ff', 
+              color: '#3730a3',
+              fontSize: isMobile ? '0.7rem' : '0.8rem'
+            }}
           />
         );
       },
     },
     {
       field: "name",
-      headerName: allowEdit ? "Nombre" : "Nombre",
-      width: 160,
-      flex: 1,
+      headerName: "Nombre",
+      width: isMobile ? 120 : 160,
+      flex: isMobile ? 1 : 1,
       renderCell: (params) => (
-        <Typography variant="body2" style={{ fontWeight: 500 }}>
+        <Typography 
+          variant="body2" 
+          style={{ 
+            fontWeight: 500,
+            fontSize: isMobile ? '0.8rem' : '0.875rem',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}
+          title={params.value}
+        >
           {params.value}
         </Typography>
       ),
     },
     {
       field: "paid",
-      headerName: "Estado",
-      width: 120,
+      headerName: isMobile ? "✓" : "Estado",
+      width: isMobile ? 60 : 120,
       renderCell: (params) => {
         return (
           <SimpleCheckBox
@@ -177,9 +220,9 @@ export default function Reciepts({
     },
     {
       field: "id",
-      headerName: "Eliminar",
+      headerName: isMobile ? "🗑️" : "Eliminar",
       sortable: false,
-      width: 100,
+      width: isMobile ? 60 : 100,
       renderCell: (params) => (
         <IconButton
           className={classes.deleteButton}
@@ -229,10 +272,14 @@ export default function Reciepts({
         <DataTable
           rows={processedReciepts}
           customStyles={{ 
-            maxHeight: "50vh",
+            maxHeight: isMobile ? "60vh" : "50vh",
             overflow: "auto"
           }}
           columns={columns}
+          pageSize={isMobile ? 5 : 10}
+          rowsPerPageOptions={isMobile ? [5, 10] : [10, 25]}
+          disableColumnMenu={isMobile}
+          density={isMobile ? "compact" : "standard"}
         />
       </Card>
     </Box>

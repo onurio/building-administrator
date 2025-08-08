@@ -122,11 +122,13 @@ export default function MainView({ auth, children }) {
     return (
       <Dashboard
         sideItems={sideItems}
-        title={`Edificio Juan del Carpio Dashboard - ${userData.name} (${
+        title={`Edificio Juan del Carpio - ${userData.name} (${
           userData.apartment?.name || "Sin departamento"
         })`}
         path="/*"
         logout={logout}
+        isAdmin={false}
+        userInfo={userData}
       >
         <Routes>
           <Route path="/" element={<General user={userData} />} />
