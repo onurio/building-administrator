@@ -6,7 +6,14 @@ import {
   TextField,
   LinearProgress,
   Typography,
+  Box,
+  Chip,
+  makeStyles,
 } from "@material-ui/core";
+import {
+  Receipt as ReceiptIcon,
+  Assignment as GenerateIcon,
+} from "@material-ui/icons";
 import React, { useContext, useState } from "react";
 import {
   calculateLaundryUsage,
@@ -30,15 +37,72 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 
-export default function GenerateReciepts({
+const useStyles = makeStyles((theme) => ({
+  container: {
+    padding: theme.spacing(3),
+    minHeight: '400px',
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: theme.spacing(3),
+  },
+  headerIcon: {
+    marginRight: theme.spacing(1),
+    color: '#4299e1',
+    fontSize: '1.5rem',
+  },
+  title: {
+    fontWeight: 600,
+    color: '#2d3748',
+    margin: 0,
+  },
+  formGrid: {
+    marginTop: theme.spacing(2),
+  },
+  dateField: {
+    width: '100%',
+    marginBottom: theme.spacing(2),
+  },
+  utilityField: {
+    width: '100%',
+  },
+  selectionRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(1),
+  },
+  selectionInfo: {
+    color: '#718096',
+    fontSize: '0.875rem',
+  },
+  generateButton: {
+    marginTop: theme.spacing(3),
+    padding: theme.spacing(1.5, 4),
+    fontWeight: 600,
+  },
+  progressContainer: {
+    textAlign: 'center',
+    padding: theme.spacing(4),
+  },
+  progressText: {
+    marginBottom: theme.spacing(2),
+    color: '#4a5568',
+  },
+}));
+
+export default function GenerarRecibos({
   apartments,
   users,
   storage,
   services,
   refresh,
 }) {
-  const [water, setWater] = useState();
-  const [electricity, setElectricity] = useState();
+  const classes = useStyles();
+  const [water, setWater] = useState('');
+  const [electricity, setElectricity] = useState('');
   const [recieptDate, setRecieptDate] = useState(new Date());
   const [progress, setProgress] = useState(40);
   const [generating, setGenerating] = useState(false);
@@ -70,7 +134,7 @@ export default function GenerateReciepts({
     handleModal(
       <div style={{ width: 500 }}>
         <SelectFromList
-          label="Select Apartments"
+          label="Seleccionar Apartamentos"
           onSave={(apts) => {
             setSelectedApts(apts);
             handleModal();
@@ -94,8 +158,6 @@ export default function GenerateReciepts({
     const monthReport = {
       water,
       electricity,
-      expectedIncome: 0,
-      laundryIncome: 0,
     };
 
     const recieptPromises = filtered.map(async (apt) => {
@@ -111,8 +173,6 @@ export default function GenerateReciepts({
         calculateLaundryUsage(laundryUsage, getMonthYear(date))
       );
 
-      monthReport.expectedIncome += reciept.total;
-      monthReport.laundryIncome += reciept.laundryTotal || 0;
 
       const doc = createPdfInvoice(reciept, date);
       const blobPDF = new Blob([doc.output()], { type: "application/pdf" });
@@ -167,7 +227,7 @@ export default function GenerateReciepts({
   useEffect(() => {
     if (Math.round(progress) === 100) {
       setGenerating(false);
-      alert("Generated Successfully");
+      alert("Recibos Generados Exitosamente");
       setTimeout(() => {
         refresh();
       }, 1000);
@@ -176,92 +236,122 @@ export default function GenerateReciepts({
 
   if (generating) {
     return (
-      <Paper
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
-          padding: 20,
-        }}
-      >
+      <Box className={classes.progressContainer}>
         {Math.round(progress) === 100 ? (
-          <h2>Generated Successfully</h2>
+          <>
+            <ReceiptIcon style={{ fontSize: '3rem', color: '#48bb78', marginBottom: 16 }} />
+            <Typography variant="h5" style={{ color: '#48bb78', fontWeight: 600 }}>
+              Recibos Generados Exitosamente
+            </Typography>
+          </>
         ) : (
           <>
-            <Typography variant="subtitle1">Generating reciepts</Typography>
+            <GenerateIcon style={{ fontSize: '2.5rem', color: '#4299e1', marginBottom: 16 }} />
+            <Typography variant="h6" className={classes.progressText}>
+              Generando Recibos...
+            </Typography>
             <LinearProgress
-              style={{ width: "100%" }}
+              style={{ width: '100%', height: 8, borderRadius: 4 }}
               variant="determinate"
               value={progress}
             />
+            <Typography variant="body2" style={{ marginTop: 8, color: '#718096' }}>
+              {Math.round(progress)}% completado
+            </Typography>
           </>
         )}
-      </Paper>
+      </Box>
     );
   }
 
+  const isFormValid = water && electricity && water > 0 && electricity > 0;
+
   return (
-    <Paper style={{ width: "100%", minWidth: 400, maxWidth: 500, padding: 20 }}>
-      <h2 style={{ marginBottom: 50 }}>Generate Invoices</h2>
-      <Grid spacing={3} xs={12} container>
-        <Grid style={{ margin: "20px 0" }} xs={12}>
+    <Box className={classes.container}>
+      <Box className={classes.header}>
+        <GenerateIcon className={classes.headerIcon} />
+        <Typography variant="h5" className={classes.title}>
+          Generar Recibos
+        </Typography>
+      </Box>
+      
+      <Grid container spacing={3} className={classes.formGrid}>
+        <Grid item xs={12}>
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
+              className={classes.dateField}
               variant="dialog"
               openTo="year"
               views={["year", "month"]}
-              label="Invoice Month && Year"
+              label="Mes y Año del Recibo"
               value={recieptDate}
               disableFuture
               onChange={setRecieptDate}
             />
           </LocalizationProvider>
         </Grid>
-        <Grid xs={6}>
+        
+        <Grid item xs={12} sm={6}>
           <TextField
+            className={classes.utilityField}
+            value={water}
             onChange={(e) => setWater(e.target.value)}
             type="number"
             name="water"
             variant="outlined"
-            label="Water bill (./S)"
+            label="Factura de Agua (S/.)"
+            placeholder="0.00"
+            inputProps={{ min: 0, step: 0.01 }}
           />
         </Grid>
-        <Grid xs={6}>
+        
+        <Grid item xs={12} sm={6}>
           <TextField
+            className={classes.utilityField}
+            value={electricity}
             onChange={(e) => setElectricity(e.target.value)}
             type="number"
             name="electricity"
             variant="outlined"
-            label="Electricity bill (./S)"
+            label="Factura de Electricidad (S/.)"
+            placeholder="0.00"
+            inputProps={{ min: 0, step: 0.01 }}
           />
         </Grid>
-        <Grid xs={12}>
-          <Button
-            onClick={openSelectApts}
-            style={{ margin: 20 }}
-            variant="contained"
-            color="primary"
-          >
-            Select Apartments
-          </Button>
-          <div>
-            {selectedApts.length}/{apartments.length} apartments selected
-          </div>
+        
+        <Grid item xs={12}>
+          <Box className={classes.selectionRow}>
+            <Button
+              onClick={openSelectApts}
+              variant="outlined"
+              color="primary"
+            >
+              Seleccionar Apartamentos
+            </Button>
+            <Box className={classes.selectionInfo}>
+              <Chip 
+                label={`${selectedApts.length}/${apartments.length} seleccionados`}
+                color={selectedApts.length === apartments.length ? 'primary' : 'default'}
+                size="small"
+              />
+            </Box>
+          </Box>
         </Grid>
 
-        <Grid xs={12}>
+        <Grid item xs={12}>
           <Button
-            disabled={electricity && water ? false : true}
+            disabled={!isFormValid}
             onClick={generate}
-            style={{ margin: 20 }}
             variant="contained"
             color="primary"
+            size="large"
+            className={classes.generateButton}
+            fullWidth
           >
-            Generate Reciepts
+            Generar Recibos ({selectedApts.length} apartamentos)
           </Button>
         </Grid>
       </Grid>
-    </Paper>
+    </Box>
   );
 }

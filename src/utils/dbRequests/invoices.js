@@ -21,7 +21,7 @@ export const deleteAllRecieptsFromMonth = async (month) => {
       return await updateUser({ ...usr, reciepts: filteredReciepts });
     });
     await Promise.all(updatePromises);
-    customAlert(true, "deleted succesfully");
+    customAlert(true, "Eliminado exitosamente");
   });
 };
 
@@ -52,6 +52,6 @@ export const deleteReciept = async (user, reciept) => {
     user.reciepts = user.reciepts.filter((r) => r.url !== reciept.url);
     await updateUser(user);
     await deleteObject(ref(storage, reciept.url));
-    customAlert(true, "Reciept deleted");
+    customAlert(true, "Recibo eliminado");
   });
 };

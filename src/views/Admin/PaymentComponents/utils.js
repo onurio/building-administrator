@@ -1,5 +1,7 @@
 // Utility functions for payment components
 
+import { generateRecieptInfo, calculateLaundryUsage, getMonthYear } from '../../../utils/util';
+
 // Utility function to safely format currency values
 export const formatCurrency = (value) => {
   const num = parseFloat(value) || 0;
@@ -90,4 +92,156 @@ export const exportPaymentsToCSV = (filteredPayments, showAlert, format, es) => 
   document.body.removeChild(link);
   
   showAlert('success', 'Archivo CSV exportado exitosamente');
+};
+
+// Calculate detailed payment breakdown for a receipt
+export const calculatePaymentBreakdown = async (user, receipt, services, apartments, getLaundryUserFn) => {
+  if (!receipt || !services || !user) {
+    return null;
+  }
+
+  try {
+    // Find the user's apartment
+    const apartment = apartments?.find(apt => apt.tenant?.id === user.id);
+    if (!apartment) {
+      return createBasicBreakdown(receipt);
+    }
+
+    // Get laundry usage for the receipt month
+    const laundryUsage = getLaundryUserFn ? 
+      await getLaundryUserFn(user.id).then(laundryUser => 
+        calculateLaundryUsage(laundryUser, receipt.name)
+      ).catch(() => null) : null;
+
+    // Calculate known fixed costs first
+    const rent = safeNumber(apartment.rent || 0);
+    const debt = safeNumber(user.debt || 0);
+    
+    // Basic services (these should be consistent)
+    const maintenance = apartment.is_garage ? 0 : 
+      apartment.custom_maintenance ? safeNumber(apartment.custom_maintenance) : 
+      Math.round(safeNumber(services.maintenance || 0));
+    const administration = apartment.is_garage ? 0 : Math.round(safeNumber(services.administration || 0));
+    const municipality = Math.round(safeNumber(apartment.municipality || 0));
+    
+    // User-specific services
+    const internet = user.services?.includes("internet") ? 50 : 0;
+    const cable = user.services?.includes("cable") ? 50 : 0;
+    const laundryTotal = laundryUsage?.total || 0;
+    
+    // Calculate what we know
+    const knownCosts = rent + debt + maintenance + administration + municipality + internet + cable + laundryTotal;
+    const receiptTotal = safeNumber(receipt.total || 0);
+    
+    // The remaining amount should be water + electricity
+    const remainingUtilities = receiptTotal - knownCosts;
+    
+    // Try to split remaining utilities between water and electricity based on percentages
+    let water = 0;
+    let electricity = 0;
+    
+    if (remainingUtilities > 0 && apartment.water_percentage && apartment.electricity_percentage) {
+      const totalUtilityPercentage = (apartment.water_percentage || 0) + (apartment.electricity_percentage || 0);
+      if (totalUtilityPercentage > 0) {
+        // Estimate based on relative percentages
+        const waterRatio = apartment.water_percentage / totalUtilityPercentage;
+        const electricityRatio = apartment.electricity_percentage / totalUtilityPercentage;
+        water = Math.round(remainingUtilities * waterRatio);
+        electricity = Math.round(remainingUtilities * electricityRatio);
+      }
+    }
+
+    // Build breakdown
+    const breakdown = {
+      // Basic services
+      rent,
+      maintenance,
+      administration,
+      municipality,
+      
+      // Utilities
+      water,
+      electricity,
+      internet,
+      cable,
+      laundryTotal,
+      
+      // Debt
+      debt,
+      
+      // Calculated totals
+      basicServices: maintenance + administration + municipality,
+      utilities: water + electricity + internet + cable + laundryTotal,
+      subtotal: 0,
+      total: receiptTotal
+    };
+
+    breakdown.subtotal = breakdown.basicServices + breakdown.utilities;
+
+    return breakdown;
+  } catch (error) {
+    console.error('Error calculating payment breakdown:', error);
+    return createBasicBreakdown(receipt);
+  }
+};
+
+// Create a basic breakdown when detailed calculation fails
+const createBasicBreakdown = (receipt) => {
+  const total = safeNumber(receipt.total || 0);
+  return {
+    rent: 0,
+    maintenance: 0,
+    administration: 0,
+    municipality: 0,
+    water: 0,
+    electricity: 0,
+    internet: 0,
+    cable: 0,
+    laundryTotal: 0,
+    debt: 0,
+    basicServices: 0,
+    utilities: 0,
+    subtotal: total,
+    total: total
+  };
+};
+
+// Format breakdown for display
+export const formatBreakdownDisplay = (breakdown) => {
+  if (!breakdown) return null;
+  
+  return {
+    basicServices: {
+      label: 'Servicios Básicos',
+      value: formatCurrency(breakdown.basicServices),
+      details: [
+        { label: 'Mantenimiento', value: formatCurrency(breakdown.maintenance) },
+        { label: 'Administración', value: formatCurrency(breakdown.administration) },
+        { label: 'Arbitrios', value: formatCurrency(breakdown.municipality) }
+      ].filter(item => safeNumber(item.value.replace('S/. ', '')) > 0)
+    },
+    utilities: {
+      label: 'Utilidades',
+      value: formatCurrency(breakdown.utilities),
+      details: [
+        { label: 'Agua', value: formatCurrency(breakdown.water) },
+        { label: 'Electricidad', value: formatCurrency(breakdown.electricity) },
+        { label: 'Internet', value: formatCurrency(breakdown.internet) },
+        { label: 'Cable', value: formatCurrency(breakdown.cable) },
+        { label: 'Lavandería', value: formatCurrency(breakdown.laundryTotal) }
+      ].filter(item => safeNumber(item.value.replace('S/. ', '')) > 0)
+    },
+    debt: {
+      label: 'Deuda Anterior',
+      value: formatCurrency(breakdown.debt)
+    },
+    rent: {
+      label: 'Alquiler',
+      value: formatCurrency(breakdown.rent)
+    },
+    total: {
+      label: 'Total',
+      value: formatCurrency(breakdown.total)
+    }
+  };
 };

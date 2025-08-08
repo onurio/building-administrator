@@ -1,7 +1,5 @@
 /* eslint-disable react/display-name */
 import {
-  debounce,
-  Divider,
   makeStyles,
   Paper,
   Slider,
@@ -13,12 +11,18 @@ import {
   LinearProgress,
   Chip,
   Avatar,
+  Button,
+  Fab,
+  Badge,
 } from "@material-ui/core";
 import {
   Opacity as WaterIcon,
   FlashOn as ElectricityIcon,
   Home as HomeIcon,
   Person as PersonIcon,
+  Save as SaveIcon,
+  Update as UpdateIcon,
+  CompareArrows as CompareIcon,
 } from "@material-ui/icons";
 import React, { useState, useEffect } from "react";
 
@@ -201,12 +205,139 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 10,
     borderRadius: theme.spacing(2),
   },
+  floatingSection: {
+    position: "fixed",
+    bottom: theme.spacing(3),
+    right: theme.spacing(3),
+    zIndex: 1000,
+    minWidth: 280,
+    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    color: "white",
+    borderRadius: theme.spacing(2),
+    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)",
+    overflow: "hidden",
+  },
+  floatingSectionContent: {
+    padding: theme.spacing(2),
+  },
+  floatingHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: theme.spacing(2),
+  },
+  floatingTitle: {
+    fontWeight: 600,
+    fontSize: "1rem",
+  },
+  changeBadge: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    color: "white",
+    fontWeight: "bold",
+    minWidth: 24,
+    height: 24,
+  },
+  floatingComparison: {
+    display: "flex",
+    flexDirection: "column",
+    gap: theme.spacing(1),
+    marginBottom: theme.spacing(2),
+  },
+  comparisonRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  utilityLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(0.5),
+    fontSize: "0.875rem",
+    opacity: 0.9,
+  },
+  percentageComparison: {
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(1),
+    fontSize: "0.875rem",
+  },
+  currentValue: {
+    opacity: 0.8,
+  },
+  arrow: {
+    fontSize: "1rem",
+    opacity: 0.7,
+  },
+  futureValue: {
+    fontWeight: "bold",
+  },
+  floatingButton: {
+    width: "100%",
+    padding: theme.spacing(1.5),
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    border: "1px solid rgba(255, 255, 255, 0.3)",
+    color: "white",
+    fontWeight: 600,
+    borderRadius: theme.spacing(1),
+    textTransform: "none",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.25)",
+    },
+    "&:disabled": {
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      color: "rgba(255, 255, 255, 0.5)",
+    },
+  },
+  previewTotals: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: theme.spacing(2),
+    backgroundColor: "#f0fff4",
+    borderRadius: theme.spacing(1),
+    marginBottom: theme.spacing(2),
+    border: "1px solid #9ae6b4",
+  },
+  previewItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(1),
+  },
+  previewValue: {
+    fontWeight: "bold",
+    color: "#2f855a",
+    fontSize: "1.1rem",
+  },
+  comparisonArrow: {
+    color: "#4a5568",
+    margin: "0 8px",
+  },
+  changedValue: {
+    color: "#e53e3e",
+    fontWeight: "bold",
+  },
+  resetButton: {
+    marginLeft: theme.spacing(1),
+  },
 }));
 
 export default function WaterAndElectricityEditor({ apartments, refresh, services }) {
   const classes = useStyles();
   const [isCalculating, setIsCalculating] = useState(false);
   const [monthlyReports, setMonthlyReports] = useState([]);
+  const [localApartments, setLocalApartments] = useState([]);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Initialize local state with apartments data
+  useEffect(() => {
+    setLocalApartments(apartments.map(apt => ({
+      ...apt,
+      water_percentage: apt.water_percentage || 0,
+      electricity_percentage: apt.electricity_percentage || 0,
+    })));
+    setHasChanges(false);
+  }, [apartments]);
 
   // Fetch monthly reports data
   useEffect(() => {
@@ -222,18 +353,70 @@ export default function WaterAndElectricityEditor({ apartments, refresh, service
     fetchMonthlyReports();
   }, []);
 
-  const updateApartment = debounce(async (apt) => {
-    setIsCalculating(true);
-    await saveApartment(apt);
-    refresh();
-    setIsCalculating(false);
-  }, 2000);
+  // Update local apartment data
+  const updateLocalApartment = (apartmentId, field, value) => {
+    setLocalApartments(prev => 
+      prev.map(apt => 
+        apt.id === apartmentId 
+          ? { ...apt, [field]: value }
+          : apt
+      )
+    );
+    setHasChanges(true);
+  };
 
-  const totalWater = apartments
+  // Save all changes to database
+  const saveChanges = async () => {
+    setIsCalculating(true);
+    try {
+      // Find apartments that have changed
+      const changedApartments = localApartments.filter(localApt => {
+        const originalApt = apartments.find(apt => apt.id === localApt.id);
+        return originalApt && (
+          originalApt.water_percentage !== localApt.water_percentage ||
+          originalApt.electricity_percentage !== localApt.electricity_percentage
+        );
+      });
+
+      // Save each changed apartment
+      await Promise.all(
+        changedApartments.map(apt => saveApartment(apt))
+      );
+      
+      setHasChanges(false);
+      refresh();
+    } catch (error) {
+      console.error('Error saving apartments:', error);
+    } finally {
+      setIsCalculating(false);
+    }
+  };
+
+  // Reset changes
+  const resetChanges = () => {
+    setLocalApartments(apartments.map(apt => ({
+      ...apt,
+      water_percentage: apt.water_percentage || 0,
+      electricity_percentage: apt.electricity_percentage || 0,
+    })));
+    setHasChanges(false);
+  };
+
+  // Current totals (from database)
+  const currentTotalWater = apartments
     .reduce((a, b) => a + Number(b.water_percentage || 0), 0)
     .toFixed(2);
   
-  const totalElectricity = apartments
+  const currentTotalElectricity = apartments
+    .reduce((a, b) => a + Number(b.electricity_percentage || 0), 0)
+    .toFixed(2);
+
+  // Preview totals (from local state)
+  const previewTotalWater = localApartments
+    .reduce((a, b) => a + Number(b.water_percentage || 0), 0)
+    .toFixed(2);
+  
+  const previewTotalElectricity = localApartments
     .reduce((a, b) => a + Number(b.electricity_percentage || 0), 0)
     .toFixed(2);
 
@@ -249,13 +432,59 @@ export default function WaterAndElectricityEditor({ apartments, refresh, service
         </Typography>
       </Box>
 
+      {/* Preview Changes Card */}
+      {hasChanges && (
+        <Card className={classes.previewTotals}>
+          <Box>
+            <Typography variant="h6" style={{ marginBottom: 8, color: '#2f855a' }}>
+              Vista Previa de Cambios
+            </Typography>
+            <Box style={{ display: 'flex', gap: 32 }}>
+              <Box className={classes.previewItem}>
+                <WaterIcon style={{ color: '#3182ce' }} />
+                <Typography>Agua:</Typography>
+                <Typography>{currentTotalWater}%</Typography>
+                <CompareIcon className={classes.comparisonArrow} />
+                <Typography className={classes.previewValue}>
+                  {previewTotalWater}%
+                </Typography>
+              </Box>
+              <Box className={classes.previewItem}>
+                <ElectricityIcon style={{ color: '#f6ad55' }} />
+                <Typography>Electricidad:</Typography>
+                <Typography>{currentTotalElectricity}%</Typography>
+                <CompareIcon className={classes.comparisonArrow} />
+                <Typography className={classes.previewValue}>
+                  {previewTotalElectricity}%
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+          <Box>
+            <Button
+              variant="outlined"
+              onClick={resetChanges}
+              className={classes.resetButton}
+            >
+              Descartar
+            </Button>
+          </Box>
+        </Card>
+      )}
+
       {/* Summary Card */}
       <Card className={classes.summaryCard}>
         <Box className={classes.summaryContent}>
           <Box className={classes.summaryItem}>
             <WaterIcon className={classes.summaryIcon} />
             <Typography className={classes.summaryValue}>
-              {isCalculating ? "..." : `${totalWater}%`}
+              {isCalculating ? "..." : 
+                hasChanges ? (
+                  <span>
+                    {currentTotalWater}% → <span className={classes.changedValue}>{previewTotalWater}%</span>
+                  </span>
+                ) : `${currentTotalWater}%`
+              }
             </Typography>
             <Typography className={classes.summaryLabel}>
               Total Agua
@@ -264,7 +493,13 @@ export default function WaterAndElectricityEditor({ apartments, refresh, service
           <Box className={classes.summaryItem}>
             <ElectricityIcon className={classes.summaryIcon} />
             <Typography className={classes.summaryValue}>
-              {isCalculating ? "..." : `${totalElectricity}%`}
+              {isCalculating ? "..." : 
+                hasChanges ? (
+                  <span>
+                    {currentTotalElectricity}% → <span className={classes.changedValue}>{previewTotalElectricity}%</span>
+                  </span>
+                ) : `${currentTotalElectricity}%`
+              }
             </Typography>
             <Typography className={classes.summaryLabel}>
               Total Electricidad
@@ -279,7 +514,7 @@ export default function WaterAndElectricityEditor({ apartments, refresh, service
 
       {/* Apartments Grid */}
       <Grid container spacing={3}>
-        {apartments.map((apt) => (
+        {localApartments.map((apt) => (
           <Grid item xs={12} md={6} lg={4} key={apt.id}>
             <Card className={classes.apartmentCard} style={{ position: 'relative' }}>
               {isCalculating && (
@@ -324,6 +559,9 @@ export default function WaterAndElectricityEditor({ apartments, refresh, service
                       label={`${apt.water_percentage || 0}%`}
                       className={`${classes.percentageChip} ${classes.waterChip}`}
                       size="small"
+                      style={{
+                        backgroundColor: hasChanges && apartments.find(origApt => origApt.id === apt.id)?.water_percentage !== apt.water_percentage ? '#e53e3e' : '#3182ce'
+                      }}
                     />
                   </Box>
                   <Slider
@@ -335,10 +573,7 @@ export default function WaterAndElectricityEditor({ apartments, refresh, service
                     valueLabelDisplay="auto"
                     className={classes.customSlider}
                     onChange={(e, value) => {
-                      updateApartment({
-                        ...apt,
-                        water_percentage: value,
-                      });
+                      updateLocalApartment(apt.id, 'water_percentage', value);
                     }}
                   />
                 </Box>
@@ -357,6 +592,9 @@ export default function WaterAndElectricityEditor({ apartments, refresh, service
                       label={`${apt.electricity_percentage || 0}%`}
                       className={`${classes.percentageChip} ${classes.electricityChip}`}
                       size="small"
+                      style={{
+                        backgroundColor: hasChanges && apartments.find(origApt => origApt.id === apt.id)?.electricity_percentage !== apt.electricity_percentage ? '#e53e3e' : '#f6ad55'
+                      }}
                     />
                   </Box>
                   <Slider
@@ -368,10 +606,7 @@ export default function WaterAndElectricityEditor({ apartments, refresh, service
                     valueLabelDisplay="auto"
                     className={`${classes.customSlider} ${classes.electricitySlider}`}
                     onChange={(e, value) => {
-                      updateApartment({
-                        ...apt,
-                        electricity_percentage: value,
-                      });
+                      updateLocalApartment(apt.id, 'electricity_percentage', value);
                     }}
                   />
                 </Box>
@@ -380,6 +615,73 @@ export default function WaterAndElectricityEditor({ apartments, refresh, service
           </Grid>
         ))}
       </Grid>
+
+      {/* Floating Save Section */}
+      {hasChanges && (
+        <Box className={classes.floatingSection}>
+          <Box className={classes.floatingSectionContent}>
+            <Box className={classes.floatingHeader}>
+              <Typography className={classes.floatingTitle}>
+                Cambios Pendientes
+              </Typography>
+              <Chip 
+                className={classes.changeBadge}
+                label={localApartments.filter(localApt => {
+                  const originalApt = apartments.find(apt => apt.id === localApt.id);
+                  return originalApt && (
+                    originalApt.water_percentage !== localApt.water_percentage ||
+                    originalApt.electricity_percentage !== localApt.electricity_percentage
+                  );
+                }).length}
+                size="small"
+              />
+            </Box>
+            
+            <Box className={classes.floatingComparison}>
+              <Box className={classes.comparisonRow}>
+                <Box className={classes.utilityLabel}>
+                  <WaterIcon fontSize="small" />
+                  <Typography variant="body2">Agua</Typography>
+                </Box>
+                <Box className={classes.percentageComparison}>
+                  <Typography className={classes.currentValue}>
+                    {currentTotalWater}%
+                  </Typography>
+                  <Typography className={classes.arrow}>→</Typography>
+                  <Typography className={classes.futureValue}>
+                    {previewTotalWater}%
+                  </Typography>
+                </Box>
+              </Box>
+              
+              <Box className={classes.comparisonRow}>
+                <Box className={classes.utilityLabel}>
+                  <ElectricityIcon fontSize="small" />
+                  <Typography variant="body2">Electricidad</Typography>
+                </Box>
+                <Box className={classes.percentageComparison}>
+                  <Typography className={classes.currentValue}>
+                    {currentTotalElectricity}%
+                  </Typography>
+                  <Typography className={classes.arrow}>→</Typography>
+                  <Typography className={classes.futureValue}>
+                    {previewTotalElectricity}%
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+            <Button
+              className={classes.floatingButton}
+              onClick={saveChanges}
+              disabled={isCalculating}
+              startIcon={<SaveIcon />}
+            >
+              {isCalculating ? 'Guardando...' : 'Guardar Cambios'}
+            </Button>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }

@@ -71,7 +71,7 @@ function TabPanel({ children, value, index, ...other }) {
   );
 }
 
-export default function Payments({ users, apartments, storage, refresh }) {
+export default function Payments({ users, apartments, services, storage, refresh }) {
   const classes = useStyles();
   const handleModal = useContext(ModalContext);
   const [tabValue, setTabValue] = useState(0);
@@ -433,6 +433,8 @@ export default function Payments({ users, apartments, storage, refresh }) {
       <TabPanel value={tabValue} index={1}>
         <BulkPaymentForm
           users={users}
+          apartments={apartments}
+          services={services}
           onSubmit={handleBulkSubmit}
           loading={loading}
         />

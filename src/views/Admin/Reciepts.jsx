@@ -6,10 +6,13 @@ import {
   Card,
   Grid,
   makeStyles,
+  Paper,
 } from "@material-ui/core";
 import {
   Receipt as ReceiptIcon,
-  Description as DocumentIcon,
+  Email as EmailIcon,
+  Delete as DeleteIcon,
+  NotificationsActive as ReminderIcon,
 } from "@material-ui/icons";
 import { getAllRecieptsMonths } from "../../utils/dbRequests";
 
@@ -42,7 +45,7 @@ const useStyles = makeStyles((theme) => ({
   statsCard: {
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     color: 'white',
-    marginBottom: theme.spacing(3),
+    marginBottom: theme.spacing(4),
     borderRadius: theme.spacing(2),
     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
   },
@@ -76,22 +79,43 @@ const useStyles = makeStyles((theme) => ({
     opacity: 0.9,
     color: 'white',
   },
-  actionsGrid: {
+  sectionTitle: {
+    fontWeight: 600,
+    color: '#2d3748',
+    marginBottom: theme.spacing(2),
+    fontSize: '1.25rem',
+  },
+  primarySection: {
+    marginBottom: theme.spacing(4),
+  },
+  managementSection: {
     marginTop: theme.spacing(2),
   },
-  actionCard: {
-    height: '100%',
+  primaryCard: {
     borderRadius: theme.spacing(2),
     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
     transition: 'all 0.3s ease',
+    border: '2px solid transparent',
     '&:hover': {
       transform: 'translateY(-2px)',
       boxShadow: '0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      border: '2px solid #e6fffa',
+    },
+  },
+  managementCard: {
+    borderRadius: theme.spacing(2),
+    boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)',
+    transition: 'all 0.3s ease',
+    border: '1px solid #e2e8f0',
+    '&:hover': {
+      transform: 'translateY(-1px)',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+      border: '1px solid #cbd5e0',
     },
   },
 }));
 
-export default function Reciepts({
+export default function Recibos({
   apartments,
   users,
   refresh,
@@ -141,50 +165,63 @@ export default function Reciepts({
         </Box>
       </Card>
 
-      {/* Actions Grid */}
-      <Grid container spacing={3} className={classes.actionsGrid}>
-        <Grid item xs={12} md={6}>
-          <Card className={classes.actionCard}>
-            <GenerateReciepts
-              users={users}
-              services={services}
-              storage={storage}
-              apartments={apartments}
-              refresh={refreshAll}
-            />
-          </Card>
+      {/* Primary Operations Section */}
+      <Box className={classes.primarySection}>
+        <Typography className={classes.sectionTitle}>
+          Operaciones Principales
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} lg={6}>
+            <Paper className={classes.primaryCard}>
+              <GenerateReciepts
+                users={users}
+                services={services}
+                storage={storage}
+                apartments={apartments}
+                refresh={refreshAll}
+              />
+            </Paper>
+          </Grid>
+          
+          <Grid item xs={12} lg={6}>
+            <Paper className={classes.primaryCard}>
+              <SendRecieptsEmail
+                users={users}
+                recieptsMonths={recieptsMonths}
+                apartments={apartments}
+              />
+            </Paper>
+          </Grid>
         </Grid>
-        
-        <Grid item xs={12} md={6}>
-          <Card className={classes.actionCard}>
-            <DeleteRecieptMonth
-              refreshMonths={refreshMonths}
-              recieptsMonths={recieptsMonths}
-              refreshAll={refresh}
-            />
-          </Card>
+      </Box>
+
+      {/* Management Operations Section */}
+      <Box className={classes.managementSection}>
+        <Typography className={classes.sectionTitle}>
+          Gestión y Mantenimiento
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Paper className={classes.managementCard}>
+              <SendReminderEmail
+                users={users}
+                recieptsMonths={recieptsMonths}
+                apartments={apartments}
+              />
+            </Paper>
+          </Grid>
+          
+          <Grid item xs={12} md={6}>
+            <Paper className={classes.managementCard}>
+              <DeleteRecieptMonth
+                refreshMonths={refreshMonths}
+                recieptsMonths={recieptsMonths}
+                refreshAll={refresh}
+              />
+            </Paper>
+          </Grid>
         </Grid>
-        
-        <Grid item xs={12} md={6}>
-          <Card className={classes.actionCard}>
-            <SendRecieptsEmail
-              users={users}
-              recieptsMonths={recieptsMonths}
-              apartments={apartments}
-            />
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} md={6}>
-          <Card className={classes.actionCard}>
-            <SendReminderEmail
-              users={users}
-              recieptsMonths={recieptsMonths}
-              apartments={apartments}
-            />
-          </Card>
-        </Grid>
-      </Grid>
+      </Box>
     </Box>
   );
 }

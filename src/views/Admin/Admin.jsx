@@ -3,7 +3,7 @@ import Dashboard from "./Dashboard";
 import SettingsIcon from "@material-ui/icons/Settings";
 import Users from "./Users";
 import Apartments from "./Apartments";
-import Reciepts from "./Reciepts";
+import Recibos from "./Reciepts";
 import Payments from "./Payments";
 import { getApartments, getServices, getUsers } from "../../utils/dbRequests";
 import Services from "./Services";
@@ -24,31 +24,31 @@ ADMIN_EMAILS = ADMIN_EMAILS.split(",");
 let sideItems = [
   {
     key: "services",
-    text: "Services",
+    text: "Servicios",
     link: "services",
     icon: <SettingsIcon />,
   },
   {
     key: "laundry",
-    text: "Laundry",
+    text: "Lavandería",
     link: "laundry",
     icon: <LocalLaundryServiceIcon />,
   },
   {
     key: "users",
-    text: "Users",
+    text: "Usuarios",
     link: "users",
     icon: <PeopleIcon />,
   },
   {
     key: "apartments",
-    text: "Apartments",
+    text: "Apartamentos",
     link: "apartments",
     icon: <ApartmentIcon />,
   },
   {
     key: "reciepts",
-    text: "Reciepts",
+    text: "Recibos",
     link: "reciepts",
     icon: <ReceiptIcon />,
   },
@@ -60,7 +60,7 @@ let sideItems = [
   },
   {
     key: "waterAndElectricity",
-    text: "Water and Electricity",
+    text: "Agua y Electricidad",
     link: "waterandelectricity",
     icon: <Equalizer />,
   },
@@ -140,8 +140,8 @@ export default function Admin({ auth, storage }) {
           <Route path="/laundry" element={<LaundryUseView users={users} path="/laundry" />} />
           <Route path="/users" element={<Users users={users} refresh={refresh} path="/users" auth={auth} storage={storage} />} />
           <Route path="/apartments" element={<Apartments apartments={apartments} users={users} refresh={refresh} path="/apartments" />} />
-          <Route path="/reciepts" element={<Reciepts apartments={apartments} users={users} storage={storage} services={services} refresh={refresh} path="/reciepts" />} />
-          <Route path="/payments" element={<Payments apartments={apartments} users={users} storage={storage} refresh={refresh} path="/payments" />} />
+          <Route path="/reciepts" element={<Recibos apartments={apartments} users={users} storage={storage} services={services} refresh={refresh} path="/reciepts" />} />
+          <Route path="/payments" element={<Payments apartments={apartments} users={users} services={services} storage={storage} refresh={refresh} path="/payments" />} />
           <Route path="/waterandelectricity" element={<WaterAndElectricityEditor apartments={apartments} users={users} services={services} refresh={refresh} path="/waterandelectricity" />} />
         </Routes>
       </Dashboard>

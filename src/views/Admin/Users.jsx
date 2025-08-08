@@ -12,6 +12,7 @@ import {
   CardContent,
   Switch,
   Chip,
+  CircularProgress,
 } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
 import {
@@ -142,6 +143,7 @@ export default function Users({ storage, auth, users, refresh }) {
     return saved !== null ? JSON.parse(saved) : true;
   });
   const [loading, setLoading] = useState(false);
+  const [loadingFiles, setLoadingFiles] = useState({});
   const { showSuccess, showError, ToastComponent } = useToast();
 
   // Save to localStorage whenever hideShow changes
@@ -150,6 +152,7 @@ export default function Users({ storage, auth, users, refresh }) {
   }, [hideShow]);
 
   const openDownloads = (user) => {
+    setLoadingFiles({...loadingFiles, [user.id]: true});
     handleModal(
       <FileUploader
         path={`${user.name.toLowerCase().replace(/ /g, "_")}_${
@@ -164,6 +167,10 @@ export default function Users({ storage, auth, users, refresh }) {
         storage={storage}
       />
     );
+    // Clear loading state after a short delay to allow modal to appear
+    setTimeout(() => {
+      setLoadingFiles({...loadingFiles, [user.id]: false});
+    }, 500);
   };
 
   const openRecieptsModal = (user) => {
@@ -270,8 +277,9 @@ export default function Users({ storage, auth, users, refresh }) {
           onClick={() => openDownloads(params.row)}
           variant="outlined"
           size="small"
-          startIcon={<FolderIcon />}
+          startIcon={loadingFiles[params.row.id] ? <CircularProgress size={16} /> : <FolderIcon />}
           color="primary"
+          disabled={loadingFiles[params.row.id]}
         >
           {params.value?.length || 0}
         </Button>

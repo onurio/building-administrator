@@ -24,14 +24,12 @@ import ChipsArray from './components/ChipArray';
 import PropTypes from 'prop-types';
 import {
   getLaundry,
-  getMonthlyReports,
   getServices,
   updateCategories,
   updateServices,
 } from '../../utils/dbRequests';
 import Loader from '../../components/Loader';
 import LaundryUseView from './LaundryUseView';
-import MonthlyReports from './MonthlyReports';
 import { useToast } from '../../components/Toast';
 
 const useStyles = makeStyles((theme) => ({
@@ -94,21 +92,11 @@ const useStyles = makeStyles((theme) => ({
   },
   contentContainer: {
     display: 'flex',
-    gap: theme.spacing(3),
-    [theme.breakpoints.down('md')]: {
-      flexDirection: 'column',
-    },
-  },
-  reportsSection: {
-    flex: 2,
-    minWidth: 0,
+    justifyContent: 'center',
   },
   pricesSection: {
-    flex: 1,
-    minWidth: '400px',
-    [theme.breakpoints.down('sm')]: {
-      minWidth: 'auto',
-    },
+    maxWidth: '600px',
+    width: '100%',
   },
   pricesCard: {
     borderRadius: theme.spacing(2),
@@ -249,7 +237,7 @@ export default function Services({ users }) {
           Configuración de Servicios
         </Typography>
         <Typography variant="subtitle1" className={classes.subtitle}>
-          Administra los precios y reportes mensuales del edificio
+          Administra los precios de los servicios del edificio
         </Typography>
       </Box>
 
@@ -270,11 +258,6 @@ export default function Services({ users }) {
 
       {/* Content Container */}
       <Box className={classes.contentContainer}>
-        {/* Monthly Reports Section */}
-        <Box className={classes.reportsSection}>
-          <MonthlyReports />
-        </Box>
-
         {/* Prices Configuration Section */}
         <Box className={classes.pricesSection}>
           <Card className={classes.pricesCard}>

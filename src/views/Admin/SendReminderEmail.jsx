@@ -6,14 +6,65 @@ import {
   MenuItem,
   Paper,
   Select,
+  Typography,
+  Box,
+  Chip,
+  makeStyles,
 } from "@material-ui/core";
+import {
+  NotificationsActive as ReminderIcon,
+  Send as SendIcon,
+} from "@material-ui/icons";
 import React, { useState, useContext } from "react";
 import { createReminderEmail, sendEmail } from "../../utils/dbRequests";
 import SelectFromList from "./components/SelectFromList";
 import { ModalContext } from "./components/SimpleModal";
 import PromptModal from "./components/PromptModal";
 
-export default function SendReminderEmail({ apartments, users }) {
+const useStyles = makeStyles((theme) => ({
+  container: {
+    padding: theme.spacing(3),
+    minHeight: '300px',
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: theme.spacing(3),
+  },
+  headerIcon: {
+    marginRight: theme.spacing(1),
+    color: '#ed8936',
+    fontSize: '1.5rem',
+  },
+  title: {
+    fontWeight: 600,
+    color: '#2d3748',
+    margin: 0,
+  },
+  description: {
+    color: '#718096',
+    marginBottom: theme.spacing(3),
+    fontSize: '0.875rem',
+  },
+  selectionRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing(2),
+  },
+  selectionInfo: {
+    color: '#718096',
+    fontSize: '0.875rem',
+  },
+  sendButton: {
+    marginTop: theme.spacing(2),
+    padding: theme.spacing(1.5, 4),
+    fontWeight: 600,
+  },
+}));
+
+export default function EnviarRecordatorios({ apartments, users }) {
+  const classes = useStyles();
   const [selectedApts, setSelectedApts] = useState(
     apartments.map((apt) => apt.name)
   );
@@ -44,8 +95,8 @@ export default function SendReminderEmail({ apartments, users }) {
       <PromptModal
         onSave={onSave}
         onCancel={handleModal}
-        actionTitle="SEND"
-        title={`Are you sure you want to send ${emailsToSendTo.length} emails`}
+        actionTitle="ENVIAR"
+        title={`¿Estás seguro de que quieres enviar ${emailsToSendTo.length} recordatorios?`}
       />
     );
   };
@@ -54,7 +105,7 @@ export default function SendReminderEmail({ apartments, users }) {
     handleModal(
       <div style={{ width: 500 }}>
         <SelectFromList
-          label="Select Apartments"
+          label="Seleccionar Apartamentos"
           onSave={(apts) => {
             setSelectedApts(apts);
             handleModal();
@@ -67,44 +118,60 @@ export default function SendReminderEmail({ apartments, users }) {
 
   if (!apartments) return null;
 
+  const emailCount = getEmailsFromApartments().length;
+  const isFormValid = selectedApts.length > 0;
+
   return (
-    <Paper
-      style={{
-        width: "100%",
-        minWidth: 400,
-        marginLeft: 20,
-        maxWidth: 300,
-        padding: 20,
-      }}
-    >
-      <h2 style={{ marginBottom: 50 }}>Send Reminder Emails</h2>
-      <Grid spacing={3} xs={12} container>
-        <Grid xs={12}>
-          <Button
-            onClick={openSelectApts}
-            style={{ margin: 20 }}
-            variant="contained"
-            color="primary"
-          >
-            Select Apartments
-          </Button>
-          <div>
-            {selectedApts.length}/{apartments.length} apartments selected
-          </div>
+    <Box className={classes.container}>
+      <Box className={classes.header}>
+        <ReminderIcon className={classes.headerIcon} />
+        <Typography variant="h5" className={classes.title}>
+          Enviar Recordatorios
+        </Typography>
+      </Box>
+      
+      <Typography className={classes.description}>
+        Envía recordatorios de pago a los residentes seleccionados.
+      </Typography>
+      
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Box className={classes.selectionRow}>
+            <Button
+              onClick={openSelectApts}
+              variant="outlined"
+              color="primary"
+            >
+              Seleccionar Apartamentos
+            </Button>
+            <Box className={classes.selectionInfo}>
+              <Chip 
+                label={`${selectedApts.length}/${apartments.length} seleccionados`}
+                color={selectedApts.length === apartments.length ? 'primary' : 'default'}
+                size="small"
+              />
+            </Box>
+          </Box>
+          <Typography variant="body2" color="textSecondary" style={{ marginTop: 8 }}>
+            {emailCount} recordatorios listos para enviar
+          </Typography>
         </Grid>
 
-        <Grid xs={12}>
+        <Grid item xs={12}>
           <Button
-            disabled={selectedApts.length === 0}
+            disabled={!isFormValid}
             onClick={sendEmails}
-            style={{ margin: 20 }}
             variant="contained"
             color="primary"
+            size="large"
+            className={classes.sendButton}
+            fullWidth
+            startIcon={<SendIcon />}
           >
-            SendEmails
+            Enviar Recordatorios ({emailCount})
           </Button>
         </Grid>
       </Grid>
-    </Paper>
+    </Box>
   );
 }

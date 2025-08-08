@@ -10,6 +10,7 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
 } from "@material-ui/core";
 import React, { useEffect, useRef, useState } from "react";
 import { FileDrop } from "react-file-drop";
@@ -200,6 +201,19 @@ const useStyles = makeStyles((theme) => ({
     color: "#4a5568",
     fontWeight: 500,
   },
+  loadingContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing(4),
+    color: "#718096",
+  },
+  loadingText: {
+    marginTop: theme.spacing(2),
+    fontSize: "0.9rem",
+    color: "#718096",
+  },
 }));
 
 export default function FileUploader({
@@ -215,6 +229,7 @@ export default function FileUploader({
   const [uploading, setUploading] = useState({});
   const [currentFiles, setCurrentFiles] = useState([...files]);
   const [filesWithDates, setFilesWithDates] = useState([]);
+  const [loadingMetadata, setLoadingMetadata] = useState(false);
 
   const onFileInputChange = (event) => {
     const { files } = event.target;
@@ -233,39 +248,45 @@ export default function FileUploader({
   // Fetch metadata for existing files on mount
   useEffect(() => {
     const fetchFileDates = async () => {
-      const filesWithMeta = await Promise.all(
-        currentFiles.map(async (file) => {
-          try {
-            const fileRef = ref(storage, file.url);
-            const metadata = await getMetadata(fileRef);
-            return {
-              ...file,
-              uploadDate: metadata.timeCreated,
-            };
-          } catch (error) {
-            console.log("Could not fetch metadata for", file.title);
-            return {
-              ...file,
-              uploadDate: null,
-            };
-          }
-        })
-      );
-      
-      // Sort by upload date (newest first)
-      filesWithMeta.sort((a, b) => {
-        if (!a.uploadDate) return 1;
-        if (!b.uploadDate) return -1;
-        return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime();
-      });
-      
-      setFilesWithDates(filesWithMeta);
+      setLoadingMetadata(true);
+      try {
+        const filesWithMeta = await Promise.all(
+          currentFiles.map(async (file) => {
+            try {
+              const fileRef = ref(storage, file.url);
+              const metadata = await getMetadata(fileRef);
+              return {
+                ...file,
+                uploadDate: metadata.timeCreated,
+              };
+            } catch (error) {
+              console.log("Could not fetch metadata for", file.title);
+              return {
+                ...file,
+                uploadDate: null,
+              };
+            }
+          })
+        );
+        
+        // Sort by upload date (newest first)
+        filesWithMeta.sort((a, b) => {
+          if (!a.uploadDate) return 1;
+          if (!b.uploadDate) return -1;
+          return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime();
+        });
+        
+        setFilesWithDates(filesWithMeta);
+      } finally {
+        setLoadingMetadata(false);
+      }
     };
 
     if (currentFiles.length > 0) {
       fetchFileDates();
     } else {
       setFilesWithDates([]);
+      setLoadingMetadata(false);
     }
   }, [currentFiles, storage]);
 
@@ -394,8 +415,18 @@ export default function FileUploader({
             </Box>
           ))}
           
+          {/* Loading State */}
+          {loadingMetadata && !Object.keys(uploading).length && (
+            <Box className={classes.loadingContainer}>
+              <CircularProgress size={40} />
+              <Typography className={classes.loadingText}>
+                Cargando archivos...
+              </Typography>
+            </Box>
+          )}
+          
           {/* Existing Files */}
-          {filesWithDates.length > 0 ? (
+          {!loadingMetadata && filesWithDates.length > 0 && (
             filesWithDates.map((file, index) => (
               <Box key={file.url} className={classes.fileItem}>
                 <Box className={classes.fileInfo}>
@@ -457,18 +488,19 @@ export default function FileUploader({
                 </Box>
               </Box>
             ))
-          ) : (
-            !Object.keys(uploading).length && (
-              <Box className={classes.emptyState}>
-                <FileCopy style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }} />
-                <Typography variant="body2">
-                  No hay archivos
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  Arrastra archivos aquí o haz clic en el área superior
-                </Typography>
-              </Box>
-            )
+          )}
+          
+          {/* Empty State */}
+          {!loadingMetadata && !Object.keys(uploading).length && filesWithDates.length === 0 && (
+            <Box className={classes.emptyState}>
+              <FileCopy style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }} />
+              <Typography variant="body2">
+                No hay archivos
+              </Typography>
+              <Typography variant="caption" color="textSecondary">
+                Arrastra archivos aquí o haz clic en el área superior
+              </Typography>
+            </Box>
           )}
         </Box>
         
