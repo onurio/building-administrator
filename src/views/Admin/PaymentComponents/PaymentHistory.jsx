@@ -23,7 +23,7 @@ import {
 } from '@material-ui/icons';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { formatCurrency, safeNumber } from './utils';
+import { formatCurrency, safeNumber, formatMonthYear } from './utils';
 
 const useStyles = makeStyles((theme) => ({
   tableContainer: {
@@ -73,7 +73,7 @@ export default function PaymentHistory({ filteredPayments, allPayments, onEditPa
                   {payment.paymentDate && format(new Date(payment.paymentDate), 'dd/MM/yyyy', { locale: es })}
                 </TableCell>
                 <TableCell>{payment.userName}</TableCell>
-                <TableCell>{payment.monthYear}</TableCell>
+                <TableCell>{formatMonthYear(payment.monthYear)}</TableCell>
                 <TableCell align="right">{formatCurrency(payment.amountPaid)}</TableCell>
                 <TableCell>
                   {payment.amountPaid >= payment.amountOwed ? (

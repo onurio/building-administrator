@@ -15,6 +15,119 @@ import {
 import { withErrorHandling, db, customAlert } from "./dbutils";
 import { updateUser } from "./users";
 
+// In-memory cache for debt calculations
+const debtCache = new Map();
+const START_MONTH = "07_2025"; // Only calculate debt from July 2025 onwards
+const START_YEAR = 2025;
+const START_MONTH_NUM = 7;
+
+// Helper function to check if a receipt month is July 2025 or later
+const isReceiptEligible = (receiptName) => {
+  if (!receiptName) return false;
+  
+  // Receipt names are in format "MM_YYYY"
+  const parts = receiptName.split('_');
+  if (parts.length !== 2) return false;
+  
+  const month = parseInt(parts[0], 10);
+  const year = parseInt(parts[1], 10);
+  
+  if (isNaN(month) || isNaN(year)) return false;
+  
+  // Check if it's July 2025 or later
+  if (year > START_YEAR) return true;
+  if (year === START_YEAR && month >= START_MONTH_NUM) return true;
+  
+  return false;
+};
+
+// Clear cache for a specific user
+export const invalidateDebtCache = (userId) => {
+  if (userId) {
+    debtCache.delete(userId);
+  }
+};
+
+// Clear entire debt cache
+export const invalidateAllDebtCache = () => {
+  debtCache.clear();
+};
+
+// Calculate debt for a user (only from July 2025 onwards)
+export const calculateUserDebt = async (userId) => {
+  return await withErrorHandling(async () => {
+    // Get user data
+    const userRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      throw new Error("Usuario no encontrado");
+    }
+    
+    const userData = userDoc.data();
+    
+    // Get eligible receipts (>= July 2025)
+    let totalOwed = 0;
+    if (userData.reciepts && Array.isArray(userData.reciepts)) {
+      userData.reciepts.forEach(receipt => {
+        // Only include receipts from July 2025 onwards
+        if (isReceiptEligible(receipt.name) && receipt.total) {
+          totalOwed += receipt.total;
+        }
+      });
+    }
+    
+    // Get all payments for this user for eligible receipts
+    let totalPaid = 0;
+    try {
+      const paymentsRef = collection(db, "payments");
+      const q = query(paymentsRef, where("userId", "==", userId));
+      const snapshot = await getDocs(q);
+      
+      snapshot.docs.forEach((doc) => {
+        const payment = doc.data();
+        // Only include payments for receipts from July 2025 onwards
+        if (isReceiptEligible(payment.monthYear) && payment.amountPaid) {
+          totalPaid += payment.amountPaid;
+        }
+      });
+    } catch (error) {
+      console.warn('Error fetching payments for debt calculation:', error);
+    }
+    
+    // Calculate debt (positive means user owes money, negative means credit)
+    return totalOwed - totalPaid;
+  }, 0); // Return 0 as default if error
+};
+
+// Get cached debt or calculate if not cached
+export const getCachedUserDebt = async (userId) => {
+  if (!userId) return 0;
+  
+  // Check if we have a cached value
+  if (debtCache.has(userId)) {
+    return debtCache.get(userId);
+  }
+  
+  // Calculate and cache the debt
+  const debt = await calculateUserDebt(userId);
+  debtCache.set(userId, debt);
+  return debt;
+};
+
+// Get all users with their calculated debt
+export const getAllUsersWithDebt = async (users) => {
+  return await withErrorHandling(async () => {
+    const usersWithDebt = await Promise.all(
+      users.map(async (user) => {
+        const debt = await getCachedUserDebt(user.id);
+        return { ...user, calculatedDebt: debt };
+      })
+    );
+    return usersWithDebt;
+  }, []);
+};
+
 // Register a new payment
 export const registerPayment = async (paymentData) => {
   return await withErrorHandling(async () => {
@@ -33,8 +146,8 @@ export const registerPayment = async (paymentData) => {
       await markReceiptAsPaid(paymentData.userId, paymentData.receiptId);
     }
     
-    // Update user's debt
-    await updateUserDebt(paymentData.userId);
+    // Invalidate debt cache for this user
+    invalidateDebtCache(paymentData.userId);
     
     customAlert(true, "Pago registrado exitosamente");
     return docRef.id;
@@ -131,61 +244,6 @@ export const markReceiptAsPaid = async (userId, receiptId) => {
   });
 };
 
-// Calculate and update user's debt
-export const updateUserDebt = async (userId) => {
-  return await withErrorHandling(async () => {
-    // Get user data
-    const userRef = doc(db, "users", userId);
-    const userDoc = await getDoc(userRef);
-    
-    if (!userDoc.exists()) {
-      throw new Error("Usuario no encontrado");
-    }
-    
-    const userData = userDoc.data();
-    
-    // Get all payments for this user
-    let payments = [];
-    try {
-      const paymentsResult = await getPaymentsByUser(userId);
-      payments = Array.isArray(paymentsResult) ? paymentsResult : [];
-    } catch (error) {
-      console.warn('Error fetching payments for user:', error);
-      payments = [];
-    }
-    
-    // Calculate total owed from all receipts
-    let totalOwed = 0;
-    if (userData.reciepts && Array.isArray(userData.reciepts)) {
-      userData.reciepts.forEach(receipt => {
-        if (receipt.total) {
-          totalOwed += receipt.total;
-        }
-      });
-    }
-    
-    // Calculate total paid
-    let totalPaid = 0;
-    if (Array.isArray(payments)) {
-      payments.forEach(payment => {
-        if (payment.amountPaid) {
-          totalPaid += payment.amountPaid;
-        }
-      });
-    }
-    
-    // Calculate debt (positive means user owes money, negative means credit)
-    const debt = totalOwed - totalPaid;
-    
-    // Update user document with new debt
-    await updateDoc(userRef, {
-      debt: debt,
-      lastDebtUpdate: serverTimestamp(),
-    });
-    
-    return debt;
-  });
-};
 
 // Get payment summary for a user and specific receipt
 export const getPaymentSummaryForReceipt = async (userId, receiptId) => {
@@ -236,8 +294,8 @@ export const updatePayment = async (paymentId, paymentData) => {
       await markReceiptAsUnpaid(paymentData.userId, paymentData.receiptId);
     }
     
-    // Update user's debt
-    await updateUserDebt(paymentData.userId);
+    // Invalidate debt cache for this user
+    invalidateDebtCache(paymentData.userId);
     
     customAlert(true, "Pago actualizado exitosamente");
     return paymentId;
@@ -263,8 +321,8 @@ export const deletePayment = async (paymentId) => {
     // Mark receipt as unpaid (since we deleted a payment)
     await markReceiptAsUnpaid(paymentData.userId, paymentData.receiptId);
     
-    // Update user's debt
-    await updateUserDebt(paymentData.userId);
+    // Invalidate debt cache for this user
+    invalidateDebtCache(paymentData.userId);
     
     customAlert(true, "Pago eliminado exitosamente");
     return paymentId;

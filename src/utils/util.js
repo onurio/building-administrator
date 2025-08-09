@@ -22,7 +22,8 @@ export const generateRecieptInfo = (
   services,
   water,
   electricity,
-  laundryUsage
+  laundryUsage,
+  dynamicDebt = 0
 ) => {
   const {
     electricity_percentage,
@@ -36,7 +37,7 @@ export const generateRecieptInfo = (
 
   const reciept = {
     rent: Number(rent),
-    debt: Number(user.debt) || 0,
+    debt: Number(dynamicDebt) || 0,
     maintenance: Math.round(maintenance),
     administration: Math.round(administration),
     municipality: Math.round(Number(municipality)),

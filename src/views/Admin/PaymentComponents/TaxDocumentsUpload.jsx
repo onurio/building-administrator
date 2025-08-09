@@ -34,7 +34,7 @@ import {
   Delete as DeleteIcon,
   GetApp as DownloadIcon,
 } from '@material-ui/icons';
-import { getApartmentName } from './utils';
+import { getApartmentName, formatMonthYear } from './utils';
 import { updateUser } from '../../../utils/dbRequests';
 import { deleteObject, ref as storageRef } from 'firebase/storage';
 
@@ -323,7 +323,7 @@ export default function TaxDocumentsUpload({ users, storage, onUpload, loading, 
                         </MenuItem>
                         {userReceipts.map((receipt) => (
                           <MenuItem key={receipt.name} value={receipt.name}>
-                            {receipt.name} - S/.{receipt.total}
+                            {formatMonthYear(receipt.name)} - S/.{receipt.total}
                           </MenuItem>
                         ))}
                       </Select>

@@ -101,6 +101,7 @@ export default function Payments({ users, apartments, services, storage, refresh
   const [allPayments, setAllPayments] = useState([]);
   const [userReceipts, setUserReceipts] = useState([]);
   const [receiptSummary, setReceiptSummary] = useState(null);
+  const [stats, setStats] = useState({ totalCollected: 0, pendingPayments: 0, totalDebt: 0 });
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -109,11 +110,9 @@ export default function Payments({ users, apartments, services, storage, refresh
   // Alert state
   const [alert, setAlert] = useState({ open: false, severity: 'success', message: '' });
 
-  // Calculate stats
-  const stats = calculatePaymentStats(users);
-
   useEffect(() => {
     loadPayments();
+    loadStats();
   }, [users]);
 
   useEffect(() => {
@@ -130,6 +129,16 @@ export default function Payments({ users, apartments, services, storage, refresh
       loadReceiptSummary();
     }
   }, [selectedUser, selectedReceipt]);
+
+  const loadStats = async () => {
+    if (!users || users.length === 0) return;
+    try {
+      const calculatedStats = await calculatePaymentStats(users);
+      setStats(calculatedStats);
+    } catch (error) {
+      console.error('Error calculating stats:', error);
+    }
+  };
 
   const loadPayments = async () => {
     try {
@@ -191,6 +200,7 @@ export default function Payments({ users, apartments, services, storage, refresh
       
       // Reload data
       await loadPayments();
+      await loadStats();
       
       showAlert('success', 'Pago registrado exitosamente');
     } catch (error) {
@@ -219,6 +229,7 @@ export default function Payments({ users, apartments, services, storage, refresh
 
       // Reload data
       await loadPayments();
+      await loadStats();
       
       if (errorCount === 0) {
         showAlert('success', `${successCount} pagos registrados exitosamente`);

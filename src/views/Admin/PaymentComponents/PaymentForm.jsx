@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -15,6 +15,7 @@ import {
   Chip,
   InputAdornment,
   LinearProgress,
+  CircularProgress,
   makeStyles,
 } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
@@ -26,7 +27,8 @@ import {
 } from '@material-ui/icons';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
-import { formatCurrency, safeNumber, getApartmentName } from './utils';
+import { formatCurrency, safeNumber, getApartmentName, formatMonthYear } from './utils';
+import { getCachedUserDebt } from '../../../utils/dbRequests/payments';
 
 const useStyles = makeStyles((theme) => ({
   formCard: {
@@ -103,6 +105,35 @@ export default function PaymentForm({
   onSubmit,
 }) {
   const classes = useStyles();
+  const [userDebts, setUserDebts] = useState({});
+  const [loadingDebts, setLoadingDebts] = useState(false);
+
+  // Load dynamic debts for all users
+  useEffect(() => {
+    const loadDebts = async () => {
+      if (!users || users.length === 0) return;
+      
+      setLoadingDebts(true);
+      const debts = {};
+      
+      await Promise.all(
+        users.map(async (user) => {
+          try {
+            const debt = await getCachedUserDebt(user.id);
+            debts[user.id] = debt;
+          } catch (error) {
+            console.error(`Error loading debt for user ${user.id}:`, error);
+            debts[user.id] = 0;
+          }
+        })
+      );
+      
+      setUserDebts(debts);
+      setLoadingDebts(false);
+    };
+    
+    loadDebts();
+  }, [users]);
 
   return (
     <Card className={classes.formCard}>
@@ -123,19 +154,26 @@ export default function PaymentForm({
               <MenuItem value="">
                 <em>Seleccione un inquilino</em>
               </MenuItem>
-              {users?.sort((a, b) => a.name.localeCompare(b.name)).map((user) => (
-                <MenuItem key={user.id} value={user.id}>
-                  {user.name} - {getApartmentName(user)}
-                  {safeNumber(user.debt) > 0 && (
-                    <Chip
-                      size="small"
-                      label={`Deuda: ${formatCurrency(user.debt)}`}
-                      color="secondary"
-                      style={{ marginLeft: 8 }}
-                    />
-                  )}
-                </MenuItem>
-              ))}
+              {users?.sort((a, b) => a.name.localeCompare(b.name)).map((user) => {
+                const debt = userDebts[user.id] || 0;
+                return (
+                  <MenuItem key={user.id} value={user.id}>
+                    {user.name} - {getApartmentName(user)}
+                    {loadingDebts ? (
+                      <CircularProgress size={16} style={{ marginLeft: 8 }} />
+                    ) : (
+                      debt > 0 && (
+                        <Chip
+                          size="small"
+                          label={`Deuda: ${formatCurrency(debt)}`}
+                          color="secondary"
+                          style={{ marginLeft: 8 }}
+                        />
+                      )
+                    )}
+                  </MenuItem>
+                );
+              })}
             </Select>
           </FormControl>
         </Box>
@@ -159,7 +197,7 @@ export default function PaymentForm({
                 </MenuItem>
                 {userReceipts.map((receipt) => (
                   <MenuItem key={receipt.name} value={receipt.name}>
-                    {receipt.name} - {formatCurrency(receipt.total)}
+                    {formatMonthYear(receipt.name)} - {formatCurrency(receipt.total)}
                     {receipt.paid && (
                       <Chip
                         size="small"

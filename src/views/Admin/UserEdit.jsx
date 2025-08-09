@@ -392,19 +392,6 @@ export default function UserEdit({ user, apartments = [], onCancel, onSave }) {
                   variant='outlined'
                   type='number'
                   placeholder='0'
-                  value={userInfo.debt || ''}
-                  label='Deuda (S/)'
-                  name='debt'
-                  onChange={handleChange}
-                  className={classes.textField}
-                />
-              </Grid>
-              <Grid item xs={12} md={3}>
-                <TextField
-                  fullWidth
-                  variant='outlined'
-                  type='number'
-                  placeholder='0'
                   value={userInfo.deposit || ''}
                   label='Depósito (S/)'
                   name='deposit'

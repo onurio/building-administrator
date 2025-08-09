@@ -20,6 +20,7 @@ import DeleteModal from "../Admin/components/DeleteModal";
 import { deleteReciept, storage, updateUser } from "../../utils/dbRequests";
 import SimpleCheckBox from "../Admin/components/SimpleCheckBox";
 import { getDownloadURL, ref } from "firebase/storage";
+import { formatMonthYear } from "../Admin/PaymentComponents/utils";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -198,9 +199,9 @@ export default function Reciepts({
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap'
           }}
-          title={params.value}
+          title={formatMonthYear(params.value)}
         >
-          {params.value}
+          {formatMonthYear(params.value)}
         </Typography>
       ),
     },

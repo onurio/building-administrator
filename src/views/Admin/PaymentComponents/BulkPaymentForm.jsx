@@ -37,7 +37,7 @@ import {
 } from '@material-ui/icons';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
-import { formatCurrency, safeNumber, getApartmentName, calculatePaymentBreakdown, formatBreakdownDisplay } from './utils';
+import { formatCurrency, safeNumber, getApartmentName, calculatePaymentBreakdown, formatBreakdownDisplay, formatMonthYear } from './utils';
 import { getLaundryUser } from '../../../utils/dbRequests';
 
 const useStyles = makeStyles((theme) => ({
@@ -352,7 +352,7 @@ export default function BulkPaymentForm({ users, apartments, services, onSubmit,
               </MenuItem>
               {availableMonths.map((month) => (
                 <MenuItem key={month} value={month}>
-                  {month}
+                  {formatMonthYear(month)}
                 </MenuItem>
               ))}
             </Select>
@@ -371,7 +371,7 @@ export default function BulkPaymentForm({ users, apartments, services, onSubmit,
                 <Box className={classes.loadingContainer}>
                   <CircularProgress size={48} />
                   <Typography className={classes.loadingText}>
-                    Procesando datos de pagos para {filterMonth}...
+                    Procesando datos de pagos para {formatMonthYear(filterMonth)}...
                   </Typography>
                 </Box>
               </CardContent>

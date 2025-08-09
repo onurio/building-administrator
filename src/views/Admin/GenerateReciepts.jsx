@@ -25,6 +25,8 @@ import {
   createMonthlyReport,
   getLaundryUser,
   updateUser,
+  getCachedUserDebt,
+  invalidateDebtCache,
 } from "../../utils/dbRequests";
 import SelectFromList from "./components/SelectFromList";
 import { ModalContext } from "./components/SimpleModal";
@@ -164,13 +166,15 @@ export default function GenerarRecibos({
       const user = users.find((usr) => usr.id === apt.tenant.id);
       if (!user) return null;
       const laundryUsage = await getLaundryUser(user.id);
+      const dynamicDebt = await getCachedUserDebt(user.id);
       const reciept = generateRecieptInfo(
         apt,
         user,
         services,
         water,
         electricity,
-        calculateLaundryUsage(laundryUsage, getMonthYear(date))
+        calculateLaundryUsage(laundryUsage, getMonthYear(date)),
+        dynamicDebt
       );
 
 
@@ -196,13 +200,15 @@ export default function GenerarRecibos({
       if (!reciept) return undefined;
       const onFinish = async (url) => {
         const newReciepts = [...reciept.user.reciepts];
+        const dynamicDebt = await getCachedUserDebt(reciept.user.id);
         const receiptData = generateRecieptInfo(
           apartments.find(apt => apt.tenant.id === reciept.user.id),
           reciept.user,
           services,
           water,
           electricity,
-          calculateLaundryUsage(await getLaundryUser(reciept.user.id), monthYear)
+          calculateLaundryUsage(await getLaundryUser(reciept.user.id), monthYear),
+          dynamicDebt
         );
         
         newReciepts.push({
@@ -214,6 +220,8 @@ export default function GenerarRecibos({
         });
         const updatedUser = { ...reciept.user, reciepts: newReciepts };
         await updateUser(updatedUser);
+        // Invalidate debt cache since we added a new receipt
+        invalidateDebtCache(reciept.user.id);
         // SEND EMAIL WITH INVOICE
         setProgress((s) => {
           return s + 100 / amount;

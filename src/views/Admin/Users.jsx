@@ -28,7 +28,7 @@ import {
 import DataTable from "./components/DataTable";
 import UserEdit from "./UserEdit";
 import { ModalContext } from "./components/SimpleModal";
-import { saveUser, deleteUser, updateUser } from "../../utils/dbRequests";
+import { saveUser, deleteUser, updateUser, getCachedUserDebt } from "../../utils/dbRequests";
 import DeleteModal from "./components/DeleteModal";
 import FileUploader from "./components/FileUploader";
 import ListReciepts from "../MainView/ListReciepts.tsx";
@@ -144,12 +144,45 @@ export default function Users({ storage, auth, users, refresh }) {
   });
   const [loading, setLoading] = useState(false);
   const [loadingFiles, setLoadingFiles] = useState({});
+  const [userDebts, setUserDebts] = useState({});
+  const [loadingDebts, setLoadingDebts] = useState(true);
   const { showSuccess, showError, ToastComponent } = useToast();
 
   // Save to localStorage whenever hideShow changes
   useEffect(() => {
     localStorage.setItem('users-table-show-all-columns', JSON.stringify(hideShow));
   }, [hideShow]);
+
+  // Load dynamic debt for all users
+  useEffect(() => {
+    const loadDebts = async () => {
+      if (!users || users.length === 0) {
+        setLoadingDebts(false);
+        return;
+      }
+      
+      setLoadingDebts(true);
+      const debts = {};
+      
+      // Load debts for all users in parallel
+      await Promise.all(
+        users.map(async (user) => {
+          try {
+            const debt = await getCachedUserDebt(user.id);
+            debts[user.id] = debt;
+          } catch (error) {
+            console.error(`Error loading debt for user ${user.id}:`, error);
+            debts[user.id] = 0;
+          }
+        })
+      );
+      
+      setUserDebts(debts);
+      setLoadingDebts(false);
+    };
+    
+    loadDebts();
+  }, [users]);
 
   const openDownloads = (user) => {
     setLoadingFiles({...loadingFiles, [user.id]: true});
@@ -230,14 +263,19 @@ export default function Users({ storage, auth, users, refresh }) {
     {
       field: "debt",
       headerName: "Deuda",
-      width: 90,
-      renderCell: (params) => (
-        <Chip
-          label={`S/.${params.value || 0}`}
-          color={params.value > 0 ? "secondary" : "default"}
-          size="small"
-        />
-      ),
+      width: 110,
+      renderCell: (params) => {
+        const debt = userDebts[params.row.id] || 0;
+        return loadingDebts ? (
+          <CircularProgress size={20} />
+        ) : (
+          <Chip
+            label={`S/.${debt.toFixed(2)}`}
+            color={debt > 0 ? "secondary" : "default"}
+            size="small"
+          />
+        );
+      },
     },
     {
       field: "deposit",

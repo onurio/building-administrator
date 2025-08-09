@@ -1,6 +1,29 @@
 // Utility functions for payment components
 
 import { generateRecieptInfo, calculateLaundryUsage, getMonthYear } from '../../../utils/util';
+import { getCachedUserDebt } from '../../../utils/dbRequests/payments';
+
+// Spanish month names
+const MONTH_NAMES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
+// Format month_year string (MM_YYYY) to readable format (e.g., "Julio 2025")
+export const formatMonthYear = (monthYear) => {
+  if (!monthYear) return '';
+  
+  // Handle format "MM_YYYY"
+  const parts = monthYear.split('_');
+  if (parts.length !== 2) return monthYear; // Return as-is if not in expected format
+  
+  const month = parseInt(parts[0], 10);
+  const year = parts[1];
+  
+  if (isNaN(month) || month < 1 || month > 12) return monthYear;
+  
+  return `${MONTH_NAMES[month - 1]} ${year}`;
+};
 
 // Utility function to safely format currency values
 export const formatCurrency = (value) => {
@@ -21,8 +44,8 @@ export const getApartmentName = (user) => {
     user.apartment || 'Sin apartamento';
 };
 
-// Calculate payment statistics
-export const calculatePaymentStats = (users) => {
+// Calculate payment statistics (now async due to dynamic debt calculation)
+export const calculatePaymentStats = async (users) => {
   if (!users || !Array.isArray(users)) {
     return { totalCollected: 0, pendingPayments: 0, totalDebt: 0 };
   }
@@ -31,27 +54,50 @@ export const calculatePaymentStats = (users) => {
   let pendingCount = 0;
   let totalCollected = 0;
 
-  users.forEach(user => {
+  // Helper function to check if a receipt month is July 2025 or later
+  const isReceiptEligible = (receiptName) => {
+    if (!receiptName) return false;
+    const parts = receiptName.split('_');
+    if (parts.length !== 2) return false;
+    const month = parseInt(parts[0], 10);
+    const year = parseInt(parts[1], 10);
+    if (isNaN(month) || isNaN(year)) return false;
+    // Check if it's July 2025 or later
+    if (year > 2025) return true;
+    if (year === 2025 && month >= 7) return true;
+    return false;
+  };
+
+  // Calculate debts for all users in parallel
+  await Promise.all(users.map(async (user) => {
     if (!user) return;
-    // Debt is only when user has explicitly accumulated debt from partial payments
-    // or late fees, not just unpaid receipts
-    if (user.debt && user.debt > 0) {
-      totalDebt += safeNumber(user.debt);
+    
+    // Get dynamic debt for this user
+    try {
+      const userDebt = await getCachedUserDebt(user.id);
+      if (userDebt > 0) {
+        totalDebt += userDebt;
+      }
+    } catch (error) {
+      console.error(`Error calculating debt for user ${user.id}:`, error);
     }
     
     if (user.reciepts) {
       user.reciepts.forEach(receipt => {
-        if (!receipt.paid) {
-          pendingCount++;
-        }
-        // Count actual payments made (this would need payment history)
-        // For now, we count paid receipts
-        if (receipt.paid && receipt.total) {
-          totalCollected += safeNumber(receipt.total);
+        // Only count receipts from July 2025 onwards for consistency
+        if (isReceiptEligible(receipt.name)) {
+          if (!receipt.paid) {
+            pendingCount++;
+          }
+          // Count actual payments made (this would need payment history)
+          // For now, we count paid receipts
+          if (receipt.paid && receipt.total) {
+            totalCollected += safeNumber(receipt.total);
+          }
         }
       });
     }
-  });
+  }));
 
   return {
     totalCollected,
@@ -115,7 +161,8 @@ export const calculatePaymentBreakdown = async (user, receipt, services, apartme
 
     // Calculate known fixed costs first
     const rent = safeNumber(apartment.rent || 0);
-    const debt = safeNumber(user.debt || 0);
+    // Get dynamic debt
+    const debt = await getCachedUserDebt(user.id) || 0;
     
     // Basic services (these should be consistent)
     const maintenance = apartment.is_garage ? 0 : 
