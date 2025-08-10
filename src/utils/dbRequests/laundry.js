@@ -144,3 +144,139 @@ export const getLaundry = async (users) => {
         return laundry;
     });
 };
+
+// Admin function to delete any reservation
+export const adminDeleteReservation = async (reservationToDelete, monthYear) => {
+    return await withErrorHandling(async () => {
+        const reservationsOfMonth = await getReservedDates(monthYear);
+        const newTotalReservationsOfMonth = reservationsOfMonth.filter(
+            (reservation) => {
+                return new Date(reservationToDelete).getTime() !== new Date(reservation.date).getTime();
+            }
+        );
+
+        await updateDoc(doc(db, 'laundry', 'calendar'), {
+            [monthYear]: newTotalReservationsOfMonth,
+        });
+
+        // Also remove from user's reservations if found
+        const userReservation = reservationsOfMonth.find(res => 
+            new Date(res.date).getTime() === new Date(reservationToDelete).getTime()
+        );
+        
+        if (userReservation && userReservation.userId) {
+            const userDoc = await getDoc(doc(db, 'laundry', 'users'));
+            const userData = userDoc.data();
+            const userReservations = userData[userReservation.userId]?.reservations?.[monthYear] || [];
+            const newUserReservations = userReservations.filter(
+                (date) => new Date(date).getTime() !== new Date(reservationToDelete).getTime()
+            );
+
+            await updateDoc(doc(db, 'laundry', 'users'), {
+                [`${userReservation.userId}.reservations.${monthYear}`]: newUserReservations,
+            });
+        }
+
+        logLaundryAction({
+            date: new Date().toISOString(),
+            userId: "admin",
+            message: `Admin deleted reservation for ${reservationToDelete}`,
+            type: "Admin Reservation Delete",
+        });
+        customAlert(true, "Reserva eliminada por el administrador");
+    });
+};
+
+// Admin function to add reservation for any user
+export const adminAddReservation = async (userId, userName, date) => {
+    return await withErrorHandling(async () => {
+        const monthYear = getMonthYear(new Date(date));
+        const formattedDate = date.toISOString();
+        
+        await updateDoc(doc(db, 'laundry', 'calendar'), {
+            [monthYear]: arrayUnion({
+                userId,
+                userName,
+                date: formattedDate,
+            }),
+        });
+
+        await updateDoc(doc(db, 'laundry', 'users'), {
+            [`${userId}.reservations.${monthYear}`]: arrayUnion(formattedDate),
+        });
+
+        logLaundryAction({
+            date: new Date().toISOString(),
+            userId: "admin",
+            message: `Admin added reservation for ${userName} on ${formattedDate}`,
+            type: "Admin Reservation Add",
+        });
+        customAlert(true, "Reserva añadida por el administrador");
+        return true;
+    });
+};
+
+// Admin function to edit laundry usage for any user
+export const adminEditLaundryUsage = async (userId, monthYear, washDry, logId = null) => {
+    return await withErrorHandling(async () => {
+        const userDoc = await getDoc(doc(db, 'laundry', 'users'));
+        const userData = userDoc.data();
+        const currentUsage = userData[userId]?.use?.[monthYear] || [];
+        
+        if (logId !== null && currentUsage[logId]) {
+            // Edit existing usage
+            currentUsage[logId] = {
+                ...currentUsage[logId],
+                ...washDry,
+                editedBy: "admin",
+                editedAt: new Date().toISOString(),
+            };
+        } else {
+            // Add new usage
+            currentUsage.push({
+                ...washDry,
+                date: new Date().toISOString(),
+                addedBy: "admin",
+            });
+        }
+
+        await updateDoc(doc(db, 'laundry', 'users'), {
+            [`${userId}.use.${monthYear}`]: currentUsage,
+        });
+
+        logLaundryAction({
+            date: new Date().toISOString(),
+            userId: "admin",
+            message: `Admin ${logId !== null ? 'edited' : 'added'} usage for user ${userId}: ${washDry.wash} washes, ${washDry.dry} dries`,
+            type: "Admin Usage Edit",
+        });
+        
+        customAlert(true, logId !== null ? "Uso editado por el administrador" : "Uso añadido por el administrador");
+    });
+};
+
+// Admin function to delete laundry usage
+export const adminDeleteLaundryUsage = async (userId, monthYear, logId) => {
+    return await withErrorHandling(async () => {
+        const userDoc = await getDoc(doc(db, 'laundry', 'users'));
+        const userData = userDoc.data();
+        const currentUsage = userData[userId]?.use?.[monthYear] || [];
+        
+        if (currentUsage[logId]) {
+            currentUsage.splice(logId, 1);
+            
+            await updateDoc(doc(db, 'laundry', 'users'), {
+                [`${userId}.use.${monthYear}`]: currentUsage,
+            });
+
+            logLaundryAction({
+                date: new Date().toISOString(),
+                userId: "admin",
+                message: `Admin deleted usage entry for user ${userId}`,
+                type: "Admin Usage Delete",
+            });
+            
+            customAlert(true, "Uso eliminado por el administrador");
+        }
+    });
+};

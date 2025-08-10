@@ -7,10 +7,10 @@ import SharedFiles from './SharedFiles';
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+    gridTemplateColumns: '1fr 2fr', // Personal info gets 1/3, shared files gets 2/3
     gap: theme.spacing(3),
-    [theme.breakpoints.down('sm')]: {
-      gridTemplateColumns: '1fr',
+    [theme.breakpoints.down('md')]: {
+      gridTemplateColumns: '1fr', // Stack vertically on medium screens and smaller
       gap: theme.spacing(1.5),
     },
   },
@@ -192,7 +192,7 @@ export default function General({ user }) {
 
         {/* Shared Files */}
         <Paper className={classes.paper}>
-          <SharedFiles sharedFiles={user.shared_files} userId={user.id} />
+          <SharedFiles sharedFiles={user.shared_files} userId={user.id} user={user} />
         </Paper>
       </div>
     </Box>

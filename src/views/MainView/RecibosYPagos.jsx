@@ -288,6 +288,19 @@ export default function RecibosYPagos({ user, refresh, handleModal, allowEdit = 
       return;
     }
 
+    // Calculate existing payments for this receipt
+    const receiptPayments = userPayments.filter(p => 
+      p.receiptId === selectedReceipt && (!p.status || p.status === 'APPROVED')
+    );
+    const totalPaid = receiptPayments.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+    const remainingAmount = receipt.total - totalPaid;
+
+    // Validate payment amount doesn't exceed remaining balance
+    if (amount > remainingAmount) {
+      alert(`El monto excede el saldo pendiente de ${formatCurrency(remainingAmount)}`);
+      return;
+    }
+
     try {
       setUploading(true);
       
@@ -296,7 +309,7 @@ export default function RecibosYPagos({ user, refresh, handleModal, allowEdit = 
         userName: user.name,
         receiptId: selectedReceipt,
         monthYear: selectedReceipt,
-        amountOwed: receipt.total,
+        amountOwed: remainingAmount, // Show remaining amount instead of full total
         amountPaid: amount,
         status: 'PENDING',
         uploadDate: new Date().toISOString(),
@@ -443,7 +456,7 @@ export default function RecibosYPagos({ user, refresh, handleModal, allowEdit = 
                   {processedReceipts.length > 0 ? processedReceipts.map((receipt) => {
                     const paymentStatus = calculateReceiptPaymentStatus(receipt, userPayments);
                     const receiptPayments = userPayments.filter(p => 
-                      p.receiptId === receipt.name && p.status === 'APPROVED'
+                      p.receiptId === receipt.name && (!p.status || p.status === 'APPROVED')
                     );
                     const totalPaid = receiptPayments.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
                     
@@ -637,11 +650,17 @@ export default function RecibosYPagos({ user, refresh, handleModal, allowEdit = 
                         const receiptName = e.target.value;
                         setSelectedReceipt(receiptName);
                         
-                        // Auto-fill payment amount with receipt total
+                        // Auto-fill payment amount with remaining balance
                         if (receiptName) {
                           const receipt = unpaidReceipts.find(r => r.name === receiptName);
                           if (receipt) {
-                            setPaymentAmount(receipt.total.toString());
+                            // Calculate existing payments for this receipt
+                            const receiptPayments = userPayments.filter(p => 
+                              p.receiptId === receiptName && (!p.status || p.status === 'APPROVED')
+                            );
+                            const totalPaid = receiptPayments.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+                            const remainingAmount = receipt.total - totalPaid;
+                            setPaymentAmount(remainingAmount.toString());
                           }
                         } else {
                           setPaymentAmount('');
@@ -653,11 +672,21 @@ export default function RecibosYPagos({ user, refresh, handleModal, allowEdit = 
                       }}
                     >
                       <option value="">Seleccione un recibo</option>
-                      {unpaidReceipts.map((receipt) => (
-                        <option key={receipt.name} value={receipt.name}>
-                          {formatMonthYear(receipt.name)} - {formatCurrency(receipt.total)}
-                        </option>
-                      ))}
+                      {unpaidReceipts.map((receipt) => {
+                        // Calculate remaining amount for dropdown display
+                        const receiptPayments = userPayments.filter(p => 
+                          p.receiptId === receipt.name && (!p.status || p.status === 'APPROVED')
+                        );
+                        const totalPaid = receiptPayments.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+                        const remainingAmount = receipt.total - totalPaid;
+                        
+                        return (
+                          <option key={receipt.name} value={receipt.name}>
+                            {formatMonthYear(receipt.name)} - {formatCurrency(remainingAmount)} 
+                            {totalPaid > 0 ? ` (${formatCurrency(totalPaid)} pagado)` : ''}
+                          </option>
+                        );
+                      })}
                     </TextField>
                   </Grid>
                   

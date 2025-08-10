@@ -120,84 +120,178 @@ const fields = [
 
 export const createPdfInvoice = (reciept, date = new Date()) => {
   const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  
+  // Colors
+  const primaryColor = [102, 126, 234]; // #667eea
+  const secondaryColor = [116, 75, 162]; // #764ba2
+  const darkGray = [45, 55, 72]; // #2d3748
+  const lightGray = [113, 128, 150]; // #718096
+  const backgroundColor = [248, 250, 252]; // #f8fafc
+  
+  // Helper function to format currency properly
+  const formatCurrency = (amount) => `S/. ${Number(amount).toFixed(2)}`;
+  
+  // Helper function to format date in Spanish
+  const formatDateSpanish = (date) => {
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    return `${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
+
+  // Add background color
+  doc.setFillColor(...backgroundColor);
+  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+  // Header section with gradient-like effect
+  doc.setFillColor(...primaryColor);
+  doc.rect(0, 0, pageWidth, 45, 'F');
+  
+  // Building title
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(24);
+  doc.text("EDIFICIO JUAN DEL CARPIO 104", pageWidth / 2, 20, { align: 'center' });
+  
+  doc.setFontSize(14);
+  doc.text("Estado de Cuenta Mensual", pageWidth / 2, 30, { align: 'center' });
+  
+  // Invoice details box
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(...lightGray);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(15, 55, pageWidth - 30, 35, 3, 3, 'FD');
+  
+  doc.setTextColor(...darkGray);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text("INFORMACIÓN DEL RECIBO", 20, 68);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.text(`Mes de Emisión: ${formatDateSpanish(date)}`, 20, 78);
+  doc.text(`Fecha de Generación: ${format(new Date(), "dd/MM/yyyy")}`, 20, 85);
+  
+  // Generate invoice number
+  const invoiceNumber = `${format(date, "yyyyMM")}-${reciept.apartment.replace(/\s+/g, '')}`;
+  doc.text(`N° Recibo: ${invoiceNumber}`, pageWidth - 20, 78, { align: 'right' });
+  
+  // Tenant information box
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(15, 100, pageWidth - 30, 35, 3, 3, 'FD');
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text("INFORMACIÓN DEL INQUILINO", 20, 113);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.text(`Nombre: ${reciept.name}`, 20, 123);
+  doc.text(`Departamento: ${reciept.apartment}`, 20, 130);
+
+  // Charges table
+  let yPos = 150;
+  doc.setFillColor(...primaryColor);
+  doc.rect(15, yPos, pageWidth - 30, 12, 'F');
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("DESCRIPCIÓN", 20, yPos + 8);
+  doc.text("MONTO", pageWidth - 20, yPos + 8, { align: 'right' });
+  
+  yPos += 15;
+  doc.setTextColor(...darkGray);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  
+  // Add items to table
+  fields.forEach((key, index) => {
+    const value = reciept[key];
+    if (value !== undefined && value > 0) {
+      // Alternate row colors
+      if (index % 2 === 0) {
+        doc.setFillColor(248, 250, 252);
+        doc.rect(15, yPos - 3, pageWidth - 30, 10, 'F');
+      }
+      
+      doc.text(fieldMapper?.[key] || key, 20, yPos + 5);
+      doc.text(formatCurrency(value), pageWidth - 20, yPos + 5, { align: 'right' });
+      yPos += 12;
+    }
+  });
+
+  // Subtotal and total section
+  yPos += 10;
+  doc.setDrawColor(...lightGray);
+  doc.line(15, yPos, pageWidth - 15, yPos);
+  yPos += 8;
+  
+  doc.setFont("helvetica", "normal");
+  doc.text("Subtotal (sin renta):", pageWidth - 80, yPos);
+  doc.text(formatCurrency(reciept.subTotal), pageWidth - 20, yPos, { align: 'right' });
+  yPos += 12;
+  
+  // Total with highlight
+  doc.setFillColor(...primaryColor);
+  doc.rect(pageWidth - 85, yPos - 5, 70, 15, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("TOTAL:", pageWidth - 80, yPos + 5);
+  doc.text(formatCurrency(reciept.total), pageWidth - 20, yPos + 5, { align: 'right' });
+
+  // Payment instructions section
+  yPos += 25;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(...lightGray);
+  doc.roundedRect(15, yPos, pageWidth - 30, 45, 3, 3, 'FD');
+  
+  doc.setTextColor(...darkGray);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("INFORMACIÓN DE PAGO", 20, yPos + 12);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  const paymentText = [
+    "• Fecha límite de pago: 5to día de cada mes",
+    "• Banco: Interbank",
+    "• Cuenta: 294-3147140804",
+    "• CCI: 003-294-013147140804-",
+    "• Titular: Federico Roque Octavio Debernardi Migliaro"
+  ];
+  
+  paymentText.forEach((line, index) => {
+    doc.text(line, 20, yPos + 22 + (index * 5));
+  });
+
+  // Footer section
+  yPos = pageHeight - 40;
+  doc.setTextColor(...lightGray);
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(9);
+  doc.text("Por favor, envíe el comprobante de pago a través de la aplicación del edificio", 
+           pageWidth / 2, yPos, { align: 'center' });
+  doc.text("o al correo electrónico de la administración.", 
+           pageWidth / 2, yPos + 6, { align: 'center' });
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.text("Calle Juan del Carpio, 104", 20, 20);
+  doc.setTextColor(...darkGray);
+  doc.text("Atentamente,", pageWidth / 2, yPos + 20, { align: 'center' });
+  doc.text("La Administración", pageWidth / 2, yPos + 26, { align: 'center' });
 
-  doc.setFontSize(14);
+  // Add footer line
+  doc.setDrawColor(...lightGray);
+  doc.setLineWidth(0.5);
+  doc.line(15, pageHeight - 15, pageWidth - 15, pageHeight - 15);
+  
+  doc.setTextColor(...lightGray);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text(`Generado el ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 
+           pageWidth / 2, pageHeight - 8, { align: 'center' });
 
-  doc.text(`Mes de emision: ${format(date, "MMM,yyyy")}`, 120, 40);
-
-  doc.text(
-    [
-      `Informacion del inquilino:`,
-      "",
-      `Nombre: ${reciept.name}`,
-      `Departamento: ${reciept.apartment}`,
-    ],
-    20,
-    40
-  );
-
-  function createHeaders(keys) {
-    var result = [];
-    for (var i = 0; i < keys.length; i += 1) {
-      let type = keys[i] === "PRECIO";
-
-      result.push({
-        id: keys[i],
-        name: keys[i],
-        prompt: keys[i],
-        width: type ? 50 : 80,
-        align: type ? "right" : "left",
-        padding: 10,
-      });
-    }
-    return result;
-  }
-
-  const headers = createHeaders(["DESCRIPCION", "PRECIO"]);
-
-  let tableData = fields.map((key) => {
-    const value = reciept[key];
-    if (value !== undefined) {
-      return {
-        DESCRIPCION: fieldMapper?.[key] || "UNDEFINED",
-        PRECIO: String(value) + "./S",
-      };
-    }
-    return undefined;
-  });
-
-  tableData = tableData.filter((row) => row !== undefined);
-
-  tableData.push({
-    DESCRIPCION: "",
-    PRECIO: `Subtotal: ` + reciept.subTotal + "./S",
-  });
-
-  tableData.push({
-    DESCRIPCION: "",
-    PRECIO: `Total: ` + reciept.total + "./S",
-  });
-
-  doc.table(20, 70, tableData, headers, {
-    autoSize: false,
-    headerBackgroundColor: "#aabfe2",
-  });
-
-  doc.setFontSize(13);
-
-  let message = [
-    `Le comunico que el pago se realiza dentro de los 5 primeros dias de cada mes.`,
-    `Por favor, enviar el comprobante del mismo al correo electronico`,
-    `Se agradece su puntualidad y colaboracion`,
-    "",
-    "Atentamente,",
-    "La Administracion",
-  ];
-
-  doc.text(message, 20, 240);
   return doc;
 };

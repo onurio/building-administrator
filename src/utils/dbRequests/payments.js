@@ -296,7 +296,7 @@ export const updatePayment = async (paymentId, paymentData) => {
 };
 
 // Delete a payment
-export const deletePayment = async (paymentId) => {
+export const deletePayment = async (paymentId, storage = null) => {
   return await withErrorHandling(async () => {
     // Get the payment data first to update user debt after deletion
     const paymentRef = doc(db, "payments", paymentId);
@@ -308,6 +308,19 @@ export const deletePayment = async (paymentId) => {
     
     const paymentData = paymentDoc.data();
     
+    // Delete associated voucher file from Firebase Storage if it exists
+    if (paymentData.voucherStoragePath && storage) {
+      try {
+        const fileRef = storageRef(storage, paymentData.voucherStoragePath);
+        await deleteObject(fileRef);
+        console.log('Voucher file deleted successfully:', paymentData.voucherStoragePath);
+      } catch (error) {
+        console.warn('Failed to delete voucher file:', error);
+        // Don't fail the payment deletion if file deletion fails
+        // The file might already be deleted or not exist
+      }
+    }
+    
     // Delete the payment document
     await deleteDoc(paymentRef);
     
@@ -317,7 +330,7 @@ export const deletePayment = async (paymentId) => {
     // Invalidate debt cache for this user
     invalidateDebtCache(paymentData.userId);
     
-    customAlert(true, "Pago eliminado exitosamente");
+    customAlert(true, "Pago y comprobante eliminados exitosamente");
     return paymentId;
   });
 };
@@ -479,8 +492,22 @@ export const approvePayment = async (paymentId, adminId, notes = '') => {
   });
 };
 
+// Helper function to delete voucher file from storage
+export const deleteVoucherFile = async (voucherStoragePath, storage) => {
+  if (!voucherStoragePath || !storage) return;
+  
+  try {
+    const fileRef = storageRef(storage, voucherStoragePath);
+    await deleteObject(fileRef);
+    console.log('Voucher file deleted successfully:', voucherStoragePath);
+  } catch (error) {
+    console.warn('Failed to delete voucher file:', error);
+    // Don't throw error, just log it
+  }
+};
+
 // Decline a payment
-export const declinePayment = async (paymentId, adminId, notes = '') => {
+export const declinePayment = async (paymentId, adminId, notes = '', deleteVoucher = false, storage = null) => {
   return await withErrorHandling(async () => {
     const paymentRef = doc(db, "payments", paymentId);
     const paymentDoc = await getDoc(paymentRef);
@@ -507,6 +534,11 @@ export const declinePayment = async (paymentId, adminId, notes = '') => {
     
     // Mark receipt as unpaid (since payment was declined)
     await markReceiptAsUnpaid(paymentData.userId, paymentData.receiptId);
+    
+    // Optionally delete voucher file if requested
+    if (deleteVoucher && paymentData.voucherStoragePath) {
+      await deleteVoucherFile(paymentData.voucherStoragePath, storage);
+    }
     
     // Send email notification to user
     try {

@@ -88,7 +88,7 @@ export const calculateReceiptPaymentStatus = (receipt, userPayments = []) => {
   if (!userPayments.length) return { isPaid: false, status: 'unpaid' };
   
   const receiptPayments = userPayments.filter(p => 
-    p.receiptId === receipt.name && p.status === 'APPROVED'
+    p.receiptId === receipt.name && (!p.status || p.status === 'APPROVED')
   );
   
   const totalPaid = receiptPayments.reduce((sum, p) => sum + (p.amountPaid || 0), 0);

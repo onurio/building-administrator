@@ -10,18 +10,35 @@ import {
   CardContent,
   Chip,
   makeStyles,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Grid,
+  IconButton,
 } from "@material-ui/core";
 import {
   LocalLaundryService as LaundryIcon,
   CalendarToday as CalendarIcon,
   Schedule as ScheduleIcon,
   Person as PersonIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Add as AddIcon,
 } from "@material-ui/icons";
 import format from "date-fns/format";
 import React, { useState } from "react";
 import { useEffect } from "react";
 import Loader from "../../components/Loader";
-import { getLaundry } from "../../utils/dbRequests";
+import { 
+  getLaundry, 
+  adminDeleteReservation, 
+  adminAddReservation, 
+  adminEditLaundryUsage, 
+  adminDeleteLaundryUsage 
+} from "../../utils/dbRequests";
 import { getMonthYear } from "../../utils/util";
 import DataTable from "./components/DataTable";
 
@@ -141,10 +158,85 @@ export default function LaundryUseView({ users }) {
   const classes = useStyles();
   const [monthYear, setMonthYear] = useState(getMonthYear(new Date()));
   const [laundry, setLaundry] = useState();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState(''); // 'reservation', 'usage'
+  const [editingItem, setEditingItem] = useState(null);
+  const [formData, setFormData] = useState({});
+
+  const refreshLaundry = async () => {
+    const updatedLaundry = await getLaundry(users);
+    setLaundry(updatedLaundry);
+  };
 
   useEffect(() => {
     getLaundry(users).then(setLaundry);
   }, []);
+
+  const handleDeleteReservation = async (reservation) => {
+    if (window.confirm(`¿Eliminar reserva del ${format(new Date(reservation.date), "dd MMM yyyy, HH:mm")}?`)) {
+      await adminDeleteReservation(reservation.date, monthYear);
+      refreshLaundry();
+    }
+  };
+
+  const handleDeleteUsage = async (usage, index) => {
+    if (window.confirm(`¿Eliminar uso de ${usage.name}?`)) {
+      const user = users.find(u => u.name === usage.name);
+      if (user) {
+        await adminDeleteLaundryUsage(user.id, monthYear, index);
+        refreshLaundry();
+      }
+    }
+  };
+
+  const openDialog = (type, item = null) => {
+    setDialogType(type);
+    setEditingItem(item);
+    
+    if (type === 'reservation') {
+      setFormData({
+        userId: item?.userId || '',
+        userName: item?.userName || '',
+        date: item?.date ? format(new Date(item.date), "yyyy-MM-dd'T'HH:mm") : '',
+      });
+    } else if (type === 'usage') {
+      setFormData({
+        userId: item?.userId || '',
+        wash: item?.wash || 0,
+        dry: item?.dry || 0,
+      });
+    }
+    
+    setDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setDialogType('');
+    setEditingItem(null);
+    setFormData({});
+  };
+
+  const handleSave = async () => {
+    try {
+      if (dialogType === 'reservation') {
+        const selectedUser = users.find(u => u.id === formData.userId);
+        await adminAddReservation(formData.userId, selectedUser?.name || '', new Date(formData.date));
+      } else if (dialogType === 'usage') {
+        await adminEditLaundryUsage(
+          formData.userId,
+          monthYear,
+          { wash: parseInt(formData.wash), dry: parseInt(formData.dry) },
+          editingItem?.index
+        );
+      }
+      
+      closeDialog();
+      refreshLaundry();
+    } catch (error) {
+      console.error('Error saving:', error);
+    }
+  };
 
   if (!laundry) return <Loader />;
 
@@ -152,7 +244,7 @@ export default function LaundryUseView({ users }) {
     {
       field: "name",
       headerName: "Usuario",
-      width: 200,
+      width: 180,
       renderCell: (params) => (
         <Box display="flex" alignItems="center">
           <PersonIcon style={{ marginRight: 8, color: '#667eea' }} />
@@ -163,7 +255,7 @@ export default function LaundryUseView({ users }) {
     {
       field: "date",
       headerName: "Fecha y Hora",
-      width: 180,
+      width: 160,
       renderCell: (params) => (
         <Chip
           label={format(new Date(params.value), "dd MMM yyyy, HH:mm")}
@@ -187,8 +279,26 @@ export default function LaundryUseView({ users }) {
     {
       field: "message",
       headerName: "Mensaje",
-      width: 350,
+      width: 280,
       flex: 1,
+    },
+    {
+      field: "actions",
+      headerName: "Acciones",
+      width: 100,
+      renderCell: (params) => (
+        <Box>
+          {params.row.type === 'Use register' && (
+            <IconButton
+              size="small"
+              onClick={() => handleDeleteUsage(params.row, params.row.index)}
+              title="Eliminar uso"
+            >
+              <DeleteIcon style={{ color: '#e53e3e' }} />
+            </IconButton>
+          )}
+        </Box>
+      ),
     },
   ];
 
@@ -196,7 +306,7 @@ export default function LaundryUseView({ users }) {
     {
       field: "userName",
       headerName: "Usuario",
-      width: 200,
+      width: 180,
       renderCell: (params) => (
         <Box display="flex" alignItems="center">
           <PersonIcon style={{ marginRight: 8, color: '#667eea' }} />
@@ -207,7 +317,7 @@ export default function LaundryUseView({ users }) {
     {
       field: "date",
       headerName: "Fecha Reservada",
-      width: 250,
+      width: 200,
       flex: 1,
       renderCell: (params) => (
         <Chip
@@ -215,6 +325,22 @@ export default function LaundryUseView({ users }) {
           size="small"
           style={{ backgroundColor: '#dcfce7', color: '#166534' }}
         />
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Acciones",
+      width: 100,
+      renderCell: (params) => (
+        <Box>
+          <IconButton
+            size="small"
+            onClick={() => handleDeleteReservation(params.row)}
+            title="Eliminar reserva"
+          >
+            <DeleteIcon style={{ color: '#e53e3e' }} />
+          </IconButton>
+        </Box>
       ),
     },
   ];
@@ -270,10 +396,21 @@ export default function LaundryUseView({ users }) {
       {/* Controls Card */}
       <Card className={classes.controlsCard}>
         <Box className={classes.controlsContainer}>
-          <Typography className={classes.sectionTitle}>
-            <ScheduleIcon className={classes.sectionIcon} />
-            Historial de Uso
-          </Typography>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Typography className={classes.sectionTitle}>
+              <ScheduleIcon className={classes.sectionIcon} />
+              Historial de Uso
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => openDialog('usage')}
+              size="small"
+            >
+              Añadir Uso
+            </Button>
+          </Box>
           
           <FormControl className={classes.monthSelector}>
             <InputLabel id="monthYear-label">Mes - Año</InputLabel>
@@ -312,13 +449,115 @@ export default function LaundryUseView({ users }) {
       {/* Active Reservations Table */}
       <Card className={classes.dataTableCard}>
         <CardContent>
-          <Typography className={classes.sectionTitle}>
-            <CalendarIcon className={classes.sectionIcon} />
-            Reservas Activas
-          </Typography>
+          <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Typography className={classes.sectionTitle}>
+              <CalendarIcon className={classes.sectionIcon} />
+              Reservas Activas
+            </Typography>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<AddIcon />}
+              onClick={() => openDialog('reservation')}
+              size="small"
+            >
+              Añadir Reserva
+            </Button>
+          </Box>
         </CardContent>
         <DataTable columns={reservationColumns} rows={reservationsRows} />
       </Card>
+
+      {/* Admin Dialog */}
+      <Dialog open={dialogOpen} onClose={closeDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {dialogType === 'reservation' 
+            ? (editingItem ? 'Editar Reserva' : 'Añadir Reserva')
+            : (editingItem ? 'Editar Uso' : 'Añadir Uso')
+          }
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3} style={{ paddingTop: 10 }}>
+            {dialogType === 'reservation' && (
+              <>
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Usuario</InputLabel>
+                    <Select
+                      value={formData.userId || ''}
+                      onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
+                    >
+                      {users.map((user) => (
+                        <MenuItem key={user.id} value={user.id}>
+                          {user.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Fecha y Hora"
+                    type="datetime-local"
+                    value={formData.date || ''}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Grid>
+              </>
+            )}
+            
+            {dialogType === 'usage' && (
+              <>
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Usuario</InputLabel>
+                    <Select
+                      value={formData.userId || ''}
+                      onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
+                    >
+                      {users.map((user) => (
+                        <MenuItem key={user.id} value={user.id}>
+                          {user.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Lavadas"
+                    type="number"
+                    value={formData.wash || 0}
+                    onChange={(e) => setFormData({ ...formData, wash: e.target.value })}
+                    inputProps={{ min: 0 }}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Secadas"
+                    type="number"
+                    value={formData.dry || 0}
+                    onChange={(e) => setFormData({ ...formData, dry: e.target.value })}
+                    inputProps={{ min: 0 }}
+                  />
+                </Grid>
+              </>
+            )}
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDialog} color="default">
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} color="primary" variant="contained">
+            Guardar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

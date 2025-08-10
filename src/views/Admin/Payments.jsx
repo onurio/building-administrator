@@ -350,7 +350,7 @@ export default function Payments({ users, apartments, services, storage, refresh
         onSave={async () => {
           try {
             setLoading(true);
-            await deletePayment(payment.id);
+            await deletePayment(payment.id, storage);
             await loadPayments();
             if (refresh) {
               await refresh();

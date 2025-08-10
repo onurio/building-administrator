@@ -156,11 +156,26 @@ export default function TaxDocumentsUpload({ users, storage, onUpload, loading, 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Validate file type (PDF only for tax documents)
-      if (file.type !== 'application/pdf') {
-        alert('Solo se permiten archivos PDF para documentos tributarios');
+      // Validate file type (PDF and images for tax documents)
+      const allowedTypes = [
+        'application/pdf',
+        'image/jpeg',
+        'image/jpg', 
+        'image/png',
+        'image/webp'
+      ];
+      
+      if (!allowedTypes.includes(file.type)) {
+        alert('Solo se permiten archivos PDF, JPG, PNG o WebP para documentos tributarios');
         return;
       }
+      
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('El archivo no puede exceder 10MB');
+        return;
+      }
+      
       setSelectedFile(file);
     }
   };
@@ -179,10 +194,12 @@ export default function TaxDocumentsUpload({ users, storage, onUpload, loading, 
       return;
     }
     
-    // Generate the filename: sunat-{month}-{year}-{user_name}.pdf
-    const [month, year] = receipt.name.split(' ');
+    // Generate the filename with proper extension: sunat-{month}-{year}-{user_name}.{ext}
+    // receipt.name is in format "MM_YYYY" (e.g., "07_2025")
+    const [month, year] = receipt.name.split('_');
     const cleanUserName = user.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-    const filename = `sunat-${month.toLowerCase()}-${year}-${cleanUserName}.pdf`;
+    const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
+    const filename = `sunat-${month}-${year}-${cleanUserName}.${fileExtension}`;
     
     const documentData = {
       userId: user.id,
@@ -361,7 +378,7 @@ export default function TaxDocumentsUpload({ users, storage, onUpload, loading, 
                 {selectedUser && selectedReceipt && (
                   <Box className={classes.formSection}>
                     <input
-                      accept=".pdf"
+                      accept=".pdf,.jpg,.jpeg,.png,.webp"
                       className={classes.fileInput}
                       id="tax-file-input"
                       type="file"
@@ -371,10 +388,10 @@ export default function TaxDocumentsUpload({ users, storage, onUpload, loading, 
                       <Box className={classes.uploadArea}>
                         <UploadIcon style={{ fontSize: 48, marginBottom: 16, color: '#667eea' }} />
                         <Typography variant="h6" style={{ marginBottom: 8 }}>
-                          {selectedFile ? selectedFile.name : 'Seleccionar archivo PDF'}
+                          {selectedFile ? selectedFile.name : 'Seleccionar archivo'}
                         </Typography>
                         <Typography variant="body2" color="textSecondary">
-                          Solo archivos PDF. Máximo 10MB.
+                          Archivos PDF, JPG, PNG o WebP. Máximo 10MB.
                         </Typography>
                       </Box>
                     </label>

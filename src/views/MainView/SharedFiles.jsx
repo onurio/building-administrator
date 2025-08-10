@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function SharedFiles({ sharedFiles = [], userId }) {
+export default function SharedFiles({ sharedFiles = [], userId, user }) {
   const classes = useStyles();
   const [filesWithDates, setFilesWithDates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -100,37 +100,19 @@ export default function SharedFiles({ sharedFiles = [], userId }) {
           allFiles.push(...sharedFilesWithMeta);
         }
 
-        // Fetch payment vouchers if userId is provided
-        if (userId) {
+        // Fetch SUNAT documents from user's tax_documents
+        if (user?.tax_documents && user.tax_documents.length > 0) {
           try {
-            const paymentVouchersRef = ref(storage, `payment-vouchers/${userId}`);
-            const receiptFolders = await listAll(paymentVouchersRef);
-            
-            for (const receiptFolder of receiptFolders.prefixes) {
-              const voucherFiles = await listAll(receiptFolder);
-              
-              for (const voucherFile of voucherFiles.items) {
-                try {
-                  const metadata = await getMetadata(voucherFile);
-                  const downloadURL = await getDownloadURL(voucherFile);
-                  
-                  // Extract receipt month from folder name
-                  const receiptMonth = receiptFolder.name;
-                  
-                  allFiles.push({
-                    id: `voucher-${voucherFile.name}`,
-                    title: `Comprobante SUNAT - ${receiptMonth}`,
-                    url: downloadURL,
-                    uploadDate: metadata.timeCreated,
-                    type: 'sunat',
-                  });
-                } catch (error) {
-                  console.warn('Could not get payment voucher metadata:', voucherFile.name, error);
-                }
-              }
-            }
+            const sunatDocs = user.tax_documents.map((doc, index) => ({
+              id: `sunat-${index}`,
+              title: doc.filename || `Documento SUNAT - ${doc.receiptName}`,
+              url: doc.downloadURL,
+              uploadDate: doc.uploadDate,
+              type: 'sunat',
+            }));
+            allFiles.push(...sunatDocs);
           } catch (error) {
-            console.warn('Could not fetch payment vouchers:', error);
+            console.warn('Could not fetch SUNAT documents:', error);
           }
         }
 
@@ -151,7 +133,7 @@ export default function SharedFiles({ sharedFiles = [], userId }) {
     };
 
     fetchAllFiles();
-  }, [sharedFiles, userId]);
+  }, [sharedFiles, userId, user]);
   
   const files = filesWithDates;
 
@@ -179,9 +161,6 @@ export default function SharedFiles({ sharedFiles = [], userId }) {
       flex: isMobile ? 1 : 0,
       renderCell: (params) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: isMobile ? '0.8rem' : '0.875rem' }}>
-            {params.value}
-          </span>
           {params.row.type === 'sunat' && (
             <Chip
               icon={<BankIcon />}
@@ -190,6 +169,9 @@ export default function SharedFiles({ sharedFiles = [], userId }) {
               className={classes.sunatChip}
             />
           )}
+          <span style={{ fontSize: isMobile ? '0.8rem' : '0.875rem' }}>
+            {params.value}
+          </span>
         </div>
       ),
     },
