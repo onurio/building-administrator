@@ -28,10 +28,11 @@ import {
 import DataTable from "./components/DataTable";
 import UserEdit from "./UserEdit";
 import { ModalContext } from "./components/SimpleModal";
-import { saveUser, deleteUser, updateUser, getCachedUserDebt } from "../../utils/dbRequests";
+import { saveUser, deleteUser, updateUser } from "../../utils/dbRequests";
+import { getCachedUserDebt, invalidateAllDebtCache } from "../../utils/dbRequests/payments";
 import DeleteModal from "./components/DeleteModal";
 import FileUploader from "./components/FileUploader";
-import ListReciepts from "../MainView/ListReciepts.tsx";
+import AdminReceiptManager from "./components/AdminReceiptManager";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { useToast } from "../../components/Toast";
 import Loader from "../../components/Loader";
@@ -162,6 +163,10 @@ export default function Users({ storage, auth, users, refresh }) {
       }
       
       setLoadingDebts(true);
+      
+      // Clear cache to force recalculation with updated logic
+      invalidateAllDebtCache();
+      
       const debts = {};
       
       // Load debts for all users in parallel
@@ -208,13 +213,11 @@ export default function Users({ storage, auth, users, refresh }) {
 
   const openRecieptsModal = (user) => {
     handleModal(
-      <div style={{ width: 800, maxWidth: "80vw", height: 660 }}>
-        <ListReciepts
+      <div style={{ width: 800, maxWidth: "90vw", height: 600 }}>
+        <AdminReceiptManager
           handleModal={handleModal}
-          allowEdit
           refresh={refresh}
           user={user}
-          reciepts={user.reciepts}
         />
       </div>
     );

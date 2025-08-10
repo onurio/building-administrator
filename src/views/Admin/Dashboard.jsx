@@ -14,6 +14,7 @@ import {
   Typography,
   Box,
   Avatar,
+  Badge,
 } from '@material-ui/core';
 import {
   Menu as MenuIcon,
@@ -239,6 +240,7 @@ function Dashboard({
   children,
   isAdmin = false,
   userInfo = null,
+  pendingPaymentsCount = 0,
 }) {
   const classes = useStyles();
   const theme = useTheme();
@@ -290,7 +292,15 @@ function Dashboard({
               className={isActive(sideItem.link) ? 'Mui-selected' : ''}
               onClick={() => setMobileOpen(false)} // Close mobile drawer on item click
             >
-              <ListItemIcon>{sideItem.icon}</ListItemIcon>
+              <ListItemIcon>
+                {sideItem.key === 'payment-approvals' && pendingPaymentsCount > 0 ? (
+                  <Badge badgeContent={pendingPaymentsCount} color="error">
+                    {sideItem.icon}
+                  </Badge>
+                ) : (
+                  sideItem.icon
+                )}
+              </ListItemIcon>
               <ListItemText primary={sideItem.text} />
             </ListItem>
           </Link>

@@ -2,6 +2,7 @@
 
 import { generateRecieptInfo, calculateLaundryUsage, getMonthYear } from '../../../utils/util';
 import { getCachedUserDebt } from '../../../utils/dbRequests/payments';
+import { isReceiptEligible } from '../../../utils/receiptUtils';
 
 // Spanish month names
 const MONTH_NAMES = [
@@ -53,20 +54,6 @@ export const calculatePaymentStats = async (users) => {
   let totalDebt = 0;
   let pendingCount = 0;
   let totalCollected = 0;
-
-  // Helper function to check if a receipt month is July 2025 or later
-  const isReceiptEligible = (receiptName) => {
-    if (!receiptName) return false;
-    const parts = receiptName.split('_');
-    if (parts.length !== 2) return false;
-    const month = parseInt(parts[0], 10);
-    const year = parseInt(parts[1], 10);
-    if (isNaN(month) || isNaN(year)) return false;
-    // Check if it's July 2025 or later
-    if (year > 2025) return true;
-    if (year === 2025 && month >= 7) return true;
-    return false;
-  };
 
   // Calculate debts for all users in parallel
   await Promise.all(users.map(async (user) => {

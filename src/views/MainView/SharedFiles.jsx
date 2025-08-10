@@ -1,9 +1,10 @@
 /* eslint-disable react/display-name */
-import { IconButton, makeStyles, Typography } from '@material-ui/core';
-import { CloudDownloadRounded } from '@material-ui/icons';
+import { IconButton, makeStyles, Typography, Chip } from '@material-ui/core';
+import { CloudDownloadRounded, AccountBalance as BankIcon } from '@material-ui/icons';
 import React, { useState, useEffect } from 'react';
-import { getStorage, ref, getMetadata } from 'firebase/storage';
+import { getStorage, ref, getMetadata, listAll, getDownloadURL } from 'firebase/storage';
 import DataTable from '../Admin/components/DataTable';
+import { getPaymentsByUser } from '../../utils/dbRequests/payments';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -40,65 +41,117 @@ const useStyles = makeStyles((theme) => ({
       padding: theme.spacing(3),
     },
   },
+  sunatChip: {
+    backgroundColor: '#1e40af',
+    color: 'white',
+    fontWeight: 500,
+    fontSize: '0.75rem',
+    height: '20px',
+    '& .MuiChip-icon': {
+      color: 'white',
+    },
+  },
 }));
 
-export default function SharedFiles({ sharedFiles = [] }) {
+export default function SharedFiles({ sharedFiles = [], userId }) {
   const classes = useStyles();
   const [filesWithDates, setFilesWithDates] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFileDates = async () => {
-      if (!sharedFiles.length) {
-        setFilesWithDates([]);
-        setLoading(false);
-        return;
-      }
-
+    const fetchAllFiles = async () => {
+      setLoading(true);
       const storage = getStorage();
-      const filesWithMeta = await Promise.all(
-        sharedFiles.map(async (file, index) => {
+      const allFiles = [];
+
+      try {
+        // Process shared files
+        if (sharedFiles.length > 0) {
+          const sharedFilesWithMeta = await Promise.all(
+            sharedFiles.map(async (file, index) => {
+              try {
+                const url = new URL(file.url);
+                const pathMatch = url.pathname.match(/\/o\/(.+)$/);
+                if (!pathMatch) {
+                  return { ...file, id: `shared-${index}`, uploadDate: null, type: 'shared' };
+                }
+                
+                const filePath = decodeURIComponent(pathMatch[1]);
+                const fileRef = ref(storage, filePath);
+                const metadata = await getMetadata(fileRef);
+                
+                return {
+                  ...file,
+                  id: `shared-${index}`,
+                  uploadDate: metadata.timeCreated,
+                  type: 'shared',
+                };
+              } catch (error) {
+                console.warn('Could not get metadata for shared file:', file.title, error);
+                return {
+                  ...file,
+                  id: `shared-${index}`,
+                  uploadDate: null,
+                  type: 'shared',
+                };
+              }
+            })
+          );
+          allFiles.push(...sharedFilesWithMeta);
+        }
+
+        // Fetch payment vouchers if userId is provided
+        if (userId) {
           try {
-            // Extract the file path from the download URL
-            const url = new URL(file.url);
-            const pathMatch = url.pathname.match(/\/o\/(.+)$/);
-            if (!pathMatch) {
-              return { ...file, id: index, uploadDate: null };
+            const paymentVouchersRef = ref(storage, `payment-vouchers/${userId}`);
+            const receiptFolders = await listAll(paymentVouchersRef);
+            
+            for (const receiptFolder of receiptFolders.prefixes) {
+              const voucherFiles = await listAll(receiptFolder);
+              
+              for (const voucherFile of voucherFiles.items) {
+                try {
+                  const metadata = await getMetadata(voucherFile);
+                  const downloadURL = await getDownloadURL(voucherFile);
+                  
+                  // Extract receipt month from folder name
+                  const receiptMonth = receiptFolder.name;
+                  
+                  allFiles.push({
+                    id: `voucher-${voucherFile.name}`,
+                    title: `Comprobante SUNAT - ${receiptMonth}`,
+                    url: downloadURL,
+                    uploadDate: metadata.timeCreated,
+                    type: 'sunat',
+                  });
+                } catch (error) {
+                  console.warn('Could not get payment voucher metadata:', voucherFile.name, error);
+                }
+              }
             }
-            
-            const filePath = decodeURIComponent(pathMatch[1]);
-            const fileRef = ref(storage, filePath);
-            const metadata = await getMetadata(fileRef);
-            
-            return {
-              ...file,
-              id: index,
-              uploadDate: metadata.timeCreated,
-            };
           } catch (error) {
-            console.warn('Could not get metadata for file:', file.title, error);
-            return {
-              ...file,
-              id: index,
-              uploadDate: null,
-            };
+            console.warn('Could not fetch payment vouchers:', error);
           }
-        })
-      );
+        }
 
-      // Sort files by upload date (newest first)
-      filesWithMeta.sort((a, b) => {
-        if (!a.uploadDate) return 1;
-        if (!b.uploadDate) return -1;
-        return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime();
-      });
+        // Sort all files by upload date (newest first)
+        allFiles.sort((a, b) => {
+          if (!a.uploadDate) return 1;
+          if (!b.uploadDate) return -1;
+          return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime();
+        });
 
-      setFilesWithDates(filesWithMeta);
-      setLoading(false);
+        setFilesWithDates(allFiles);
+      } catch (error) {
+        console.error('Error fetching files:', error);
+        setFilesWithDates([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchFileDates();
-  }, [sharedFiles]);
+    fetchAllFiles();
+  }, [sharedFiles, userId]);
   
   const files = filesWithDates;
 
@@ -122,8 +175,23 @@ export default function SharedFiles({ sharedFiles = [] }) {
     {
       field: 'title',
       headerName: 'Nombre',
-      width: isMobile ? 180 : 300,
+      width: isMobile ? 140 : 250,
       flex: isMobile ? 1 : 0,
+      renderCell: (params) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: isMobile ? '0.8rem' : '0.875rem' }}>
+            {params.value}
+          </span>
+          {params.row.type === 'sunat' && (
+            <Chip
+              icon={<BankIcon />}
+              label="SUNAT"
+              size="small"
+              className={classes.sunatChip}
+            />
+          )}
+        </div>
+      ),
     },
     {
       field: 'uploadDate',

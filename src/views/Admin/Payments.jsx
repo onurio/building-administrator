@@ -11,6 +11,7 @@ import {
 import Alert from '@material-ui/lab/Alert';
 import {
   Payment as PaymentIcon,
+  CheckCircle as ApprovalIcon,
 } from '@material-ui/icons';
 import {
   registerPayment,
@@ -37,6 +38,7 @@ import PaymentEditModal from './PaymentComponents/PaymentEditModal';
 import MonthlyPaymentsChart from './PaymentComponents/MonthlyPaymentsChart';
 import DeleteModal from './components/DeleteModal';
 import { ModalContext } from './components/SimpleModal';
+import PaymentApprovals from './PaymentApprovals';
 import { 
   calculatePaymentStats, 
   exportPaymentsToCSV, 
@@ -415,6 +417,10 @@ export default function Payments({ users, apartments, services, storage, refresh
           <Tab label="Registrar Pago" />
           <Tab label="Pagos Masivos" />
           <Tab label="Historial de Pagos" />
+          <Tab 
+            label="Aprobar Pagos" 
+            icon={<ApprovalIcon />}
+          />
           <Tab label="Documentos SUNAT" />
         </Tabs>
       </Paper>
@@ -473,8 +479,13 @@ export default function Payments({ users, apartments, services, storage, refresh
         />
       </TabPanel>
 
-      {/* Tax Documents Tab */}
+      {/* Payment Approvals Tab */}
       <TabPanel value={tabValue} index={3}>
+        <PaymentApprovals refresh={refresh} />
+      </TabPanel>
+
+      {/* Tax Documents Tab */}
+      <TabPanel value={tabValue} index={4}>
         <TaxDocumentsUpload
           users={users}
           storage={storage}

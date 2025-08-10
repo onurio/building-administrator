@@ -52,6 +52,7 @@ const useStyles = makeStyles((theme) => ({
     color: '#374151',
     minWidth: '140px',
     fontSize: '0.9rem',
+    textAlign: 'left',
   },
   infoValue: {
     color: '#1a202c',
@@ -133,6 +134,7 @@ export default function General({ user }) {
         Mi Información
       </Typography>
 
+
       <div className={classes.root}>
         {/* Personal Information */}
         <Paper className={classes.paper}>
@@ -190,7 +192,7 @@ export default function General({ user }) {
 
         {/* Shared Files */}
         <Paper className={classes.paper}>
-          <SharedFiles sharedFiles={user.shared_files} />
+          <SharedFiles sharedFiles={user.shared_files} userId={user.id} />
         </Paper>
       </div>
     </Box>

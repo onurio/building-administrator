@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pago Rechazado</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); padding: 30px 20px; text-align: center;">
+      <h1 style="color: #ffffff; margin: 0; font-size: 24px;">✗ Pago Rechazado</h1>
+      <p style="color: #ffffff; margin: 10px 0 0 0; opacity: 0.9;">Edificio Juan del Carpio 104</p>
+    </div>
+    
+    <!-- Content -->
+    <div style="padding: 30px 20px;">
+      <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+        Estimado/a {{userName}},
+      </p>
+      
+      <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+        Lamentamos informarte que tu pago ha sido <strong style="color: #e53e3e;">RECHAZADO</strong>.
+      </p>
+      
+      <div style="background-color: #fef2f2; border-left: 4px solid #e53e3e; padding: 15px; margin: 20px 0;">
+        <p style="margin: 5px 0;"><strong>Mes/Año:</strong> {{monthYear}}</p>
+        <p style="margin: 5px 0;"><strong>Monto Enviado:</strong> S/. {{amountPaid}}</p>
+        <p style="margin: 5px 0;"><strong>Estado:</strong> <span style="color: #e53e3e; font-weight: bold;">RECHAZADO</span></p>
+        <p style="margin: 5px 0;"><strong>Fecha de Revisión:</strong> {{reviewDate}}</p>
+      </div>
+      
+      {{#if reviewNotes}}
+      <div style="background-color: #fff5f5; border: 1px solid #feb2b2; padding: 15px; margin: 20px 0; border-radius: 6px;">
+        <p style="margin: 5px 0; color: #c53030;"><strong>Motivo del Rechazo:</strong></p>
+        <p style="margin: 5px 0; color: #7c2d2d;">{{reviewNotes}}</p>
+      </div>
+      {{else}}
+      <div style="background-color: #fff5f5; border: 1px solid #feb2b2; padding: 15px; margin: 20px 0; border-radius: 6px;">
+        <p style="margin: 5px 0; color: #c53030;"><strong>Motivo del Rechazo:</strong></p>
+        <p style="margin: 5px 0; color: #7c2d2d;">
+          Por favor, verifica que el comprobante de pago sea legible y corresponda al mes indicado. 
+          Si tienes dudas, contacta con la administración.
+        </p>
+      </div>
+      {{/if}}
+      
+      <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+        <strong>Por favor, realiza un nuevo pago o sube un comprobante válido.</strong>
+      </p>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="https://edificio-jdc.web.app" 
+           style="display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold;">
+          Subir Nuevo Comprobante
+        </a>
+      </div>
+      
+      <p style="color: #666; font-size: 14px; line-height: 1.6; margin-top: 30px;">
+        Si crees que esto es un error, por favor contacta con la administración.
+      </p>
+    </div>
+    
+    <!-- Footer -->
+    <div style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e0e0e0;">
+      <p style="color: #666; font-size: 12px; margin: 0;">
+        Este es un correo automático. Por favor, no responda a este mensaje.
+      </p>
+      <p style="color: #666; font-size: 12px; margin: 5px 0 0 0;">
+        © 2025 Edificio Juan del Carpio 104
+      </p>
+    </div>
+  </div>
+</body>
+</html>

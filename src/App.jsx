@@ -5,6 +5,7 @@ import firebaseConfig from './firebaseConfig';
 import MainView from './views/MainView';
 import Loader from './components/Loader';
 import { initDB, setAlert, setStorage } from './utils/dbRequests';
+import { setGlobalAuth } from './utils/authUtils';
 import { Snackbar } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
 import { initializeApp } from 'firebase/app';
@@ -43,6 +44,7 @@ function App() {
       setAlert(triggerSnack);
       storage.current = getStorage(app.current);
       setStorage(storage.current);
+      setGlobalAuth(auth.current); // Set global auth for utility functions
       setLoading(false);
     }
   }, []);

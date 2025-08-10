@@ -70,16 +70,54 @@ export default function PaymentHistory({ filteredPayments, allPayments, onEditPa
             {filteredPayments.map((payment) => (
               <TableRow key={payment.id}>
                 <TableCell>
-                  {payment.paymentDate && format(new Date(payment.paymentDate), 'dd/MM/yyyy', { locale: es })}
+                  {(() => {
+                    try {
+                      if (payment.paymentDate) {
+                        return format(new Date(payment.paymentDate), 'dd/MM/yyyy', { locale: es });
+                      }
+                      if (payment.uploadDate && payment.uploadDate.toDate) {
+                        return format(payment.uploadDate.toDate(), 'dd/MM/yyyy', { locale: es });
+                      }
+                      if (payment.createdAt && payment.createdAt.toDate) {
+                        return format(payment.createdAt.toDate(), 'dd/MM/yyyy', { locale: es });
+                      }
+                      return 'N/A';
+                    } catch (error) {
+                      console.error('Error formatting date for payment:', payment.id, error);
+                      return 'Error';
+                    }
+                  })()}
                 </TableCell>
                 <TableCell>{payment.userName}</TableCell>
                 <TableCell>{formatMonthYear(payment.monthYear)}</TableCell>
                 <TableCell align="right">{formatCurrency(payment.amountPaid)}</TableCell>
                 <TableCell>
-                  {payment.amountPaid >= payment.amountOwed ? (
-                    <Chip size="small" label="Completo" style={{ backgroundColor: '#48bb78', color: 'white' }} />
+                  {payment.status ? (
+                    // User payment with status
+                    <Chip 
+                      size="small" 
+                      label={
+                        payment.status === 'APPROVED' ? 'Aprobado' :
+                        payment.status === 'PENDING' ? 'Pendiente' :
+                        payment.status === 'DECLINED' ? 'Rechazado' :
+                        payment.status
+                      }
+                      style={{ 
+                        backgroundColor: 
+                          payment.status === 'APPROVED' ? '#48bb78' :
+                          payment.status === 'PENDING' ? '#ed8936' :
+                          payment.status === 'DECLINED' ? '#e53e3e' :
+                          '#cbd5e0',
+                        color: 'white' 
+                      }} 
+                    />
                   ) : (
-                    <Chip size="small" label="Parcial" color="secondary" />
+                    // Admin payment (no status, check amount)
+                    payment.amountPaid >= payment.amountOwed ? (
+                      <Chip size="small" label="Completo" style={{ backgroundColor: '#48bb78', color: 'white' }} />
+                    ) : (
+                      <Chip size="small" label="Parcial" style={{ backgroundColor: '#4299e1', color: 'white' }} />
+                    )
                   )}
                 </TableCell>
                 <TableCell align="center">
