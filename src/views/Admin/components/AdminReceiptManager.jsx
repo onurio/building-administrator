@@ -198,7 +198,7 @@ export default function AdminReceiptManager({ user, refresh, handleModal }) {
                 {processedReceipts.length > 0 ? processedReceipts.map((receipt) => {
                   const paymentStatus = calculateReceiptPaymentStatus(receipt, userPayments);
                   const receiptPayments = userPayments.filter(p => 
-                    p.receiptId === receipt.name && p.status === 'APPROVED'
+                    p.receiptId === receipt.name && (!p.status || p.status === 'APPROVED')
                   );
                   const totalPaid = receiptPayments.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
                   

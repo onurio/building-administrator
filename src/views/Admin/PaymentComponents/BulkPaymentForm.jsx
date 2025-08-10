@@ -39,6 +39,7 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { formatCurrency, safeNumber, getApartmentName, calculatePaymentBreakdown, formatBreakdownDisplay, formatMonthYear } from './utils';
 import { getLaundryUser } from '../../../utils/dbRequests';
+import { getPaymentsByUser } from '../../../utils/dbRequests/payments';
 
 const useStyles = makeStyles((theme) => ({
   formCard: {
@@ -206,6 +207,22 @@ export default function BulkPaymentForm({ users, apartments, services, onSubmit,
               r.name === filterMonth && !r.paid && safeNumber(r.total) > 0
             );
             if (receipt) {
+              // Get existing payments for this user to calculate remaining amount
+              let userPayments = [];
+              try {
+                userPayments = await getPaymentsByUser(user.id);
+              } catch (error) {
+                console.warn(`Failed to load payments for user ${user.name}:`, error);
+                userPayments = [];
+              }
+              
+              // Calculate existing payments for this receipt
+              const receiptPayments = userPayments.filter(p => 
+                p.receiptId === receipt.name && (!p.status || p.status === 'APPROVED')
+              );
+              const totalPaid = receiptPayments.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+              const remainingAmount = Math.max(0, safeNumber(receipt.total) - totalPaid);
+              
               const item = {
                 userId: user.id,
                 userName: user.name,
@@ -213,7 +230,7 @@ export default function BulkPaymentForm({ users, apartments, services, onSubmit,
                 receiptId: receipt.name,
                 monthYear: receipt.name,
                 amountOwed: safeNumber(receipt.total),
-                amountPaid: safeNumber(receipt.total), // Default to full amount
+                amountPaid: remainingAmount, // Default to remaining amount instead of full amount
                 receipt,
                 user,
                 key: `${user.id}-${receipt.name}`,
@@ -482,7 +499,17 @@ export default function BulkPaymentForm({ users, apartments, services, onSubmit,
                             </TableCell>
                             <TableCell align="right" className={classes.breakdownCell}>
                               <span className={classes.breakdownValue}>
-                                {formatCurrency(item.amountOwed)}
+                                {item.amountPaid < item.amountOwed ? (
+                                  // Show partial payment info: remaining / total
+                                  <div>
+                                    <div>{formatCurrency(item.amountOwed)}</div>
+                                    <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>
+                                      Pagado: {formatCurrency(item.amountOwed - item.amountPaid)}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  formatCurrency(item.amountOwed)
+                                )}
                               </span>
                             </TableCell>
                             <TableCell align="right">

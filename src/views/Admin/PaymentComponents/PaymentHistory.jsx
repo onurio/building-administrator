@@ -90,7 +90,20 @@ export default function PaymentHistory({ filteredPayments, allPayments, onEditPa
                 </TableCell>
                 <TableCell>{payment.userName}</TableCell>
                 <TableCell>{formatMonthYear(payment.monthYear)}</TableCell>
-                <TableCell align="right">{formatCurrency(payment.amountPaid)}</TableCell>
+                <TableCell align="right">
+                  {payment.amountOwed && payment.amountPaid < payment.amountOwed ? (
+                    // Show partial payment format: paid / owed
+                    <div>
+                      <div>{formatCurrency(payment.amountPaid)} / {formatCurrency(payment.amountOwed)}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>
+                        Pendiente: {formatCurrency(payment.amountOwed - payment.amountPaid)}
+                      </div>
+                    </div>
+                  ) : (
+                    // Show normal payment amount
+                    formatCurrency(payment.amountPaid)
+                  )}
+                </TableCell>
                 <TableCell>
                   {payment.status ? (
                     // User payment with status
