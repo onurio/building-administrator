@@ -253,8 +253,8 @@ export default function AdminReceiptManager({ user, refresh, handleModal }) {
                               <DeleteModal
                                 onCancel={() => handleModal()}
                                 onSave={async () => {
-                                  await onDelete(receipt);
                                   handleModal();
+                                  await onDelete(receipt);
                                 }}
                               />
                             )

@@ -366,8 +366,8 @@ export default function Users({ storage, auth, users, refresh }) {
                 <DeleteModal
                   onCancel={() => handleModal()}
                   onSave={() => {
-                    onDelete(params.row.id);
                     handleModal();
+                    onDelete(params.row.id);
                   }}
                 />
               )

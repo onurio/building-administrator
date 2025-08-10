@@ -348,6 +348,7 @@ export default function Payments({ users, apartments, services, storage, refresh
       <DeleteModal
         onCancel={() => handleModal()}
         onSave={async () => {
+          handleModal();
           try {
             setLoading(true);
             await deletePayment(payment.id, storage);
@@ -362,7 +363,6 @@ export default function Payments({ users, apartments, services, storage, refresh
           } finally {
             setLoading(false);
           }
-          handleModal();
         }}
       />
     );

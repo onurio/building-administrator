@@ -228,8 +228,8 @@ export default function Apartments({ users, apartments, refresh }) {
                 <DeleteModal
                   onCancel={() => handleModal()}
                   onSave={() => {
-                    onDelete(params.row.id);
                     handleModal();
+                    onDelete(params.row.id);
                   }}
                 />
               )
