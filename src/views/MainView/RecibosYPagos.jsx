@@ -21,6 +21,7 @@ import {
   LinearProgress,
   makeStyles,
   Divider,
+  Snackbar,
 } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import {
@@ -48,6 +49,7 @@ import {
   getUnpaidEligibleReceipts 
 } from '../../utils/receiptUtils';
 import { getDownloadURL, ref } from 'firebase/storage';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import DeleteModal from '../Admin/components/DeleteModal';
 
 const useStyles = makeStyles((theme) => ({
@@ -200,7 +202,7 @@ const bankInfo = {
   banco: 'Interbank',
   tipoCuenta: 'Cuenta Simple Soles Ahorros',
   numeroCuenta: '294-3147140804',
-  codigoCCI: '003-294-013147140804-',
+  codigoCCI: '003-294-013147140804-60',
   titular: 'Federico Roque Octavio Debernardi Migliaro',
 };
 
@@ -215,6 +217,7 @@ export default function RecibosYPagos({ user, refresh, handleModal, allowEdit = 
   const [refreshData, setRefreshData] = useState(0);
   const [userDebt, setUserDebt] = useState(0);
   const [loadingPayments, setLoadingPayments] = useState(true);
+  const { copyToClipboard, showSnackbar, handleCloseSnackbar, copiedText, error } = useCopyToClipboard();
 
   useEffect(() => {
     if (user?.id) {
@@ -243,14 +246,6 @@ export default function RecibosYPagos({ user, refresh, handleModal, allowEdit = 
     }
   };
 
-  const copyToClipboard = async (text, label) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      console.log(`${label} copied to clipboard`);
-    } catch (error) {
-      console.error('Error copying to clipboard:', error);
-    }
-  };
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -758,6 +753,24 @@ export default function RecibosYPagos({ user, refresh, handleModal, allowEdit = 
           </CardContent>
         </Card>
       </div>
+      
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        open={showSnackbar}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={error ? 'error' : 'success'}
+          style={{ width: '100%' }}
+        >
+          {error ? 'Error al copiar' : `${copiedText} copiado al portapapeles`}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

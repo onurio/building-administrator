@@ -23,6 +23,7 @@ import {
   InputAdornment,
   makeStyles,
   Tooltip,
+  Snackbar,
 } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import {
@@ -37,6 +38,7 @@ import {
 import { getApartmentName, formatMonthYear } from './utils';
 import { updateUser } from '../../../utils/dbRequests';
 import { deleteObject, ref as storageRef } from 'firebase/storage';
+import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard';
 
 const useStyles = makeStyles((theme) => ({
   formCard: {
@@ -115,6 +117,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function TaxDocumentsUpload({ users, storage, onUpload, loading, refresh }) {
   const classes = useStyles();
+  const { copyToClipboard, showSnackbar, handleCloseSnackbar, copiedText, error } = useCopyToClipboard();
   
   // Filter states
   const [selectedUser, setSelectedUser] = useState('');
@@ -229,11 +232,6 @@ export default function TaxDocumentsUpload({ users, storage, onUpload, loading, 
     }
   };
   
-  const copyToClipboard = (text, type) => {
-    navigator.clipboard.writeText(text).then(() => {
-      // Could show a toast notification here
-    });
-  };
   
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -504,6 +502,24 @@ export default function TaxDocumentsUpload({ users, storage, onUpload, loading, 
           </CardContent>
         </Card>
       )}
+      
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        open={showSnackbar}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={error ? 'error' : 'success'}
+          style={{ width: '100%' }}
+        >
+          {error ? 'Error al copiar' : `${copiedText} copiado al portapapeles`}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

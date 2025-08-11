@@ -2,7 +2,7 @@ import { setDoc, doc } from "firebase/firestore";
 import { withErrorHandling, db, customAlert } from "./dbutils";
 import { getIdToken } from "../authUtils";
 
-const apiUrl = process.env.REACT_APP_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL;
 
 // Helper function to get auth headers
 const getAuthHeaders = async () => {

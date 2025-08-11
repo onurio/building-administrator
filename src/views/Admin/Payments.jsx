@@ -18,7 +18,6 @@ import {
   getAllPayments,
   getPaymentsByUser,
   getPaymentSummaryForReceipt,
-  updateUserDebt,
   updatePayment,
   deletePayment,
 } from '../../utils/dbRequests/payments';

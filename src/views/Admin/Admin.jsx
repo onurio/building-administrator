@@ -81,7 +81,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-let ADMIN_EMAILS = process.env.REACT_APP_ADMIN_EMAILS ?? "";
+let ADMIN_EMAILS = import.meta.env.VITE_ADMIN_EMAILS ?? "";
 ADMIN_EMAILS = ADMIN_EMAILS.split(",");
 const getBaseSideItems = () => [
   {

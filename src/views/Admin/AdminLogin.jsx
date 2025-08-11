@@ -31,7 +31,7 @@ const theme = createMuiTheme({
   },
 });
 
-const ADMIN_EMAILS = process.env.REACT_APP_ADMIN_EMAILS?.split(",") || [];
+const ADMIN_EMAILS = import.meta.env.VITE_ADMIN_EMAILS?.split(",") || [];
 
 const useStyles = makeStyles((theme) => ({
   root: {

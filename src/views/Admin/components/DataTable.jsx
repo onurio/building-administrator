@@ -86,9 +86,6 @@ const useStyles = makeStyles((theme) => ({
       overflowX: 'auto',
       WebkitOverflowScrolling: 'touch',
     },
-    '& .MuiDataGrid-row': {
-      minHeight: '48px !important',
-    },
   },
   container: {
     width: '100%',

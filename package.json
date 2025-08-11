@@ -2,6 +2,7 @@
   "name": "building-administrator",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@date-io/date-fns": "^3.0.0",
     "@emotion/cache": "^11.14.0",
@@ -32,15 +33,14 @@
     "react-file-drop": "^3.1.6",
     "react-router": "^6.23.0",
     "react-router-dom": "^6.23.0",
-    "react-scripts": "5.0.1",
     "simple-react-calendar": "^2.2.8",
     "web-vitals": "^3.5.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "echo \"Tests not configured for Vite yet\"",
     "deploy": "firebase deploy",
     "deploy:no:functions": "firebase deploy --except functions",
     "build:deploy:no:functions": "npm run build && npm run deploy:no:functions",
@@ -66,6 +66,7 @@
   },
   "devDependencies": {
     "@types/react": "^18.3.2",
+    "@vitejs/plugin-react": "^4.7.0",
     "ajv": "^8.17.1",
     "eslint": "^9.1.1",
     "eslint-config-airbnb": "^19.0.4",
@@ -73,6 +74,7 @@
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-react-hooks": "^4.6.2",
-    "sass": "^1.76.0"
+    "sass": "^1.76.0",
+    "vite": "^5.4.19"
   }
 }

@@ -259,7 +259,7 @@ export const createPdfInvoice = (reciept, date = new Date()) => {
     "• Fecha límite de pago: 5to día de cada mes",
     "• Banco: Interbank",
     "• Cuenta: 294-3147140804",
-    "• CCI: 003-294-013147140804-",
+    "• CCI: 003-294-013147140804-60",
     "• Titular: Federico Roque Octavio Debernardi Migliaro"
   ];
   

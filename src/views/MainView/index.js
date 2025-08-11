@@ -132,7 +132,7 @@ export default function MainView({ auth, children, currentUser }) {
 
     signInWithEmailAndPassword(auth, email, password)
       .then((usr) => {
-        setLoading(false);
+        // Don't set loading false here - let onAuthStateChanged handle it
         console.log(usr);
       })
       .catch(function (error) {
@@ -156,8 +156,14 @@ export default function MainView({ auth, children, currentUser }) {
             if (data?.id) {
               loadUserDebt(data.id);
             }
+          }).catch((error) => {
+            console.error("Error getting user data:", error);
+            setLoading(false);
+            setIsAuthenticaited(false);
           });
         } else {
+          setIsAuthenticaited(false);
+          setUserData(null);
           setLoading(false);
         }
       });

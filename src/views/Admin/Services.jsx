@@ -25,7 +25,6 @@ import PropTypes from 'prop-types';
 import {
   getLaundry,
   getServices,
-  updateCategories,
   updateServices,
 } from '../../utils/dbRequests';
 import Loader from '../../components/Loader';
