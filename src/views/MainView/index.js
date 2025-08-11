@@ -11,7 +11,7 @@ import PersonIcon from "@material-ui/icons/Person";
 import ReceiptIcon from "@material-ui/icons/Receipt";
 import PaymentIcon from "@material-ui/icons/Payment";
 import { AttachMoney as MoneyIcon } from "@material-ui/icons";
-import { Route, Routes, useNavigate } from "react-router";
+import { Route, Routes, useNavigate, useLocation } from "react-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { 
   Dialog,
@@ -24,6 +24,7 @@ import {
 } from '@material-ui/core';
 import { getCachedUserDebt } from '../../utils/dbRequests/payments';
 import { formatCurrency } from '../Admin/PaymentComponents/utils';
+import analytics from '../../utils/analytics';
 
 const useStyles = makeStyles((theme) => ({
   debtModal: {
@@ -94,14 +95,23 @@ let sideItems = [
   },
 ];
 
-export default function MainView({ auth, children }) {
+export default function MainView({ auth, children, currentUser }) {
   const classes = useStyles();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isAuthenticated, setIsAuthenticaited] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState();
   const [userDebt, setUserDebt] = useState(0);
   const [showDebtModal, setShowDebtModal] = useState(false);
+
+  // Track page views
+  useEffect(() => {
+    if (currentUser && location.pathname) {
+      const pageName = location.pathname === '/' ? 'general' : location.pathname.replace('/', '');
+      analytics.trackPageView(pageName, currentUser);
+    }
+  }, [location.pathname, currentUser]);
 
   const logout = () => {
     auth

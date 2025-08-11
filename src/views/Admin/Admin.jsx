@@ -16,6 +16,7 @@ import Users from "./Users";
 import Apartments from "./Apartments";
 import Recibos from "./Reciepts";
 import Payments from "./Payments";
+import Analytics from "./Analytics";
 import { getApartments, getServices, getUsers } from "../../utils/dbRequests";
 import { getPendingPaymentCount } from "../../utils/dbRequests/payments";
 import Services from "./Services";
@@ -26,10 +27,11 @@ import PaymentIcon from "@material-ui/icons/Payment";
 import LocalLaundryServiceIcon from "@material-ui/icons/LocalLaundryService";
 import LaundryUseView from "./LaundryUseView";
 import WaterAndElectricityEditor from "./WaterAndElectricityEditor";
-import { Equalizer, GraphicEq } from "@material-ui/icons";
+import { Equalizer, GraphicEq, Assessment as AnalyticsIcon } from "@material-ui/icons";
 import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
-import { Route, Router, Routes } from "react-router";
+import { Route, Router, Routes, useLocation } from "react-router";
 import AdminLogin from "./AdminLogin";
+import analytics from '../../utils/analytics';
 
 const useStyles = makeStyles((theme) => ({
   pendingModal: {
@@ -81,7 +83,7 @@ const useStyles = makeStyles((theme) => ({
 
 let ADMIN_EMAILS = process.env.REACT_APP_ADMIN_EMAILS ?? "";
 ADMIN_EMAILS = ADMIN_EMAILS.split(",");
-let sideItems = [
+const getBaseSideItems = () => [
   {
     key: "services",
     text: "Servicios",
@@ -126,15 +128,42 @@ let sideItems = [
   },
 ];
 
-export default function Admin({ auth, storage }) {
+export default function Admin({ auth, storage, currentUser }) {
   const classes = useStyles();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isAuthenticaited, setIsAuthenticaited] = useState(false);
   const [apartments, setApartments] = useState([]);
   const [users, setUsers] = useState([]);
   const [services, setServices] = useState();
   const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
   const [showPendingModal, setShowPendingModal] = useState(false);
+  const [userEmail, setUserEmail] = useState(null);
+
+  // Create sideItems based on user permissions
+  const sideItems = React.useMemo(() => {
+    const baseSideItems = getBaseSideItems();
+    
+    // Add Analytics only for authorized users
+    if (userEmail === 'omrinuri@gmail.com' || userEmail === 'alborde86@gmail.com') {
+      baseSideItems.push({
+        key: "analytics",
+        text: "Analytics",
+        link: "analytics",
+        icon: <AnalyticsIcon />,
+      });
+    }
+    
+    return baseSideItems;
+  }, [userEmail]);
+
+  // Track page views for admin
+  useEffect(() => {
+    if (currentUser && location.pathname && isAuthenticaited) {
+      const pageName = location.pathname.replace('/admin', '').replace('/', '') || 'dashboard';
+      analytics.trackPageView(`admin-${pageName}`, currentUser);
+    }
+  }, [location.pathname, currentUser, isAuthenticaited]);
 
   const logout = () => {
     auth
@@ -157,13 +186,16 @@ export default function Admin({ auth, storage }) {
             ADMIN_EMAILS.includes(user.email)
           ) {
             setIsAuthenticaited(true);
+            setUserEmail(user.email);
           } else {
             setIsAuthenticaited(false);
+            setUserEmail(null);
           }
           // User is signed in.
         } else {
           // No user is signed in.
           setIsAuthenticaited(false);
+          setUserEmail(null);
         }
       });
     }
@@ -278,6 +310,9 @@ export default function Admin({ auth, storage }) {
             <Route path="/reciepts" element={<Recibos apartments={apartments} users={users} storage={storage} services={services} refresh={refresh} path="/reciepts" />} />
             <Route path="/payments" element={<Payments apartments={apartments} users={users} services={services} storage={storage} refresh={refresh} path="/payments" />} />
             <Route path="/waterandelectricity" element={<WaterAndElectricityEditor apartments={apartments} users={users} services={services} refresh={refresh} path="/waterandelectricity" />} />
+            {(userEmail === 'omrinuri@gmail.com' || userEmail === 'alborde86@gmail.com') && (
+              <Route path="/analytics" element={<Analytics path="/analytics" />} />
+            )}
           </Routes>
         </Dashboard>
       </>
