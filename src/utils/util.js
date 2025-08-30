@@ -37,7 +37,6 @@ export const generateRecieptInfo = (
 
   const reciept = {
     rent: Number(rent),
-    debt: Number(dynamicDebt) || 0,
     maintenance: Math.round(maintenance),
     administration: Math.round(administration),
     municipality: Math.round(Number(municipality)),
@@ -62,14 +61,17 @@ export const generateRecieptInfo = (
   if (user.services.indexOf("cable") !== -1) reciept.cable = 50;
   if (laundryUsage) reciept.laundryTotal = laundryUsage.total;
 
-  let total = 0;
+  let monthlyTotal = 0;
 
   Object.keys(reciept).forEach((key) => {
-    total += Math.round(reciept[key]);
+    monthlyTotal += Math.round(reciept[key]);
   });
 
-  reciept.total = total;
-  reciept.subTotal = total - rent;
+  reciept.monthlyTotal = monthlyTotal;
+  reciept.total = monthlyTotal;
+  reciept.subTotal = monthlyTotal - reciept.rent;
+  reciept.displayDebt = Number(dynamicDebt) || 0;
+  reciept.totalWithDebt = monthlyTotal + reciept.displayDebt;
   reciept.name = user.name;
   reciept.apartment = apt.name;
 
@@ -115,7 +117,6 @@ const fields = [
   "cable",
   "internet",
   "laundryTotal",
-  "debt",
 ];
 
 export const createPdfInvoice = (reciept, date = new Date()) => {
@@ -199,17 +200,32 @@ export const createPdfInvoice = (reciept, date = new Date()) => {
   doc.text(`Nombre: ${reciept.name}`, 20, yPos + 14);
   doc.text(`Departamento: ${reciept.apartment}`, 20, yPos + 19);
 
-  // Move to charges table
+  // Move to charges section
   yPos += 27;
   
-  // Charges table header
+  // Previous balance section (if debt exists)
+  if (reciept.displayDebt && reciept.displayDebt > 0) {
+    doc.setFillColor(255, 243, 224); // Light orange background
+    doc.setDrawColor(...lightGray);
+    doc.roundedRect(15, yPos, pageWidth - 30, 12, 2, 2, 'FD');
+    
+    doc.setTextColor(156, 59, 29); // Dark orange text
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("SALDO ANTERIOR PENDIENTE", 20, yPos + 6);
+    doc.text(formatCurrency(reciept.displayDebt), pageWidth - 20, yPos + 6, { align: 'right' });
+    
+    yPos += 17;
+  }
+  
+  // Current month charges table header
   doc.setFillColor(...primaryColor);
   doc.rect(15, yPos, pageWidth - 30, 9, 'F');
   
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
-  doc.text("DESCRIPCION", 20, yPos + 6);
+  doc.text("CARGOS DEL MES ACTUAL", 20, yPos + 6);
   doc.text("MONTO", pageWidth - 20, yPos + 6, { align: 'right' });
   
   yPos += 11;
@@ -217,7 +233,7 @@ export const createPdfInvoice = (reciept, date = new Date()) => {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   
-  // Add items to table with tighter spacing
+  // Add current month items to table with tighter spacing
   fields.forEach((key, index) => {
     const value = reciept[key];
     if (value !== undefined && value > 0) {
@@ -245,14 +261,26 @@ export const createPdfInvoice = (reciept, date = new Date()) => {
   doc.text(formatCurrency(reciept.subTotal), pageWidth - 20, yPos, { align: 'right' });
   yPos += 8;
   
-  // Total with highlight
-  doc.setFillColor(...primaryColor);
+  // Current month total
+  doc.setFillColor(229, 238, 255); // Light blue background
   doc.rect(pageWidth - 75, yPos - 4, 60, 11, 'F');
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(...primaryColor);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
-  doc.text("TOTAL:", pageWidth - 70, yPos + 3);
+  doc.text("TOTAL MES:", pageWidth - 70, yPos + 3);
   doc.text(formatCurrency(reciept.total), pageWidth - 20, yPos + 3, { align: 'right' });
+  
+  // Total amount due (including debt) if debt exists
+  if (reciept.displayDebt && reciept.displayDebt > 0) {
+    yPos += 15;
+    doc.setFillColor(...primaryColor);
+    doc.rect(pageWidth - 85, yPos - 4, 70, 11, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("TOTAL A PAGAR:", pageWidth - 80, yPos + 3);
+    doc.text(formatCurrency(reciept.totalWithDebt), pageWidth - 20, yPos + 3, { align: 'right' });
+  }
 
   // Payment instructions section
   yPos += 18;

@@ -216,7 +216,7 @@ export default function GenerarRecibos({
           name: monthYear,
           url,
           paid: false,
-          total: receiptData.total,
+          total: receiptData.monthlyTotal,
         });
         const updatedUser = { ...reciept.user, reciepts: newReciepts };
         await updateUser(updatedUser);
