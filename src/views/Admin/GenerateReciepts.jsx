@@ -28,7 +28,7 @@ import {
   getCachedUserDebt,
   invalidateDebtCache,
 } from "../../utils/dbRequests";
-import SelectFromList from "./components/SelectFromList";
+import ApartmentSelection from "./components/ApartmentSelection";
 import { ModalContext } from "./components/SimpleModal";
 import { useEffect } from "react";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -135,13 +135,13 @@ export default function GenerarRecibos({
   const openSelectApts = () => {
     handleModal(
       <div style={{ width: 500 }}>
-        <SelectFromList
-          label="Seleccionar Apartamentos"
+        <ApartmentSelection
+          apartments={apartments}
+          users={users}
           onSave={(apts) => {
             setSelectedApts(apts);
             handleModal();
           }}
-          list={apartments.map((apt) => apt.name)}
         />
       </div>
     );

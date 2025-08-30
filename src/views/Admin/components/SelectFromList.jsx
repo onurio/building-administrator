@@ -101,7 +101,7 @@ const mapListToDict = (list) => {
   return dict;
 };
 
-export default function SelectFromList({ list = [], label, onSave }) {
+export default function SelectFromList({ list = [], label, onSave, labels = {} }) {
   const classes = useStyles();
   const [dict, setDict] = useState({});
 
@@ -208,7 +208,7 @@ export default function SelectFromList({ list = [], label, onSave }) {
                 </TableCell>
                 <TableCell>
                   <Typography className={classes.apartmentName}>
-                    {item}
+                    {labels[item] || item}
                   </Typography>
                 </TableCell>
               </TableRow>

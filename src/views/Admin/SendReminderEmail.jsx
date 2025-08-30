@@ -17,7 +17,7 @@ import {
 } from "@material-ui/icons";
 import React, { useState, useContext } from "react";
 import { createReminderEmail, sendEmail } from "../../utils/dbRequests";
-import SelectFromList from "./components/SelectFromList";
+import ApartmentSelection from "./components/ApartmentSelection";
 import { ModalContext } from "./components/SimpleModal";
 import PromptModal from "./components/PromptModal";
 
@@ -104,13 +104,13 @@ export default function EnviarRecordatorios({ apartments, users }) {
   const openSelectApts = () => {
     handleModal(
       <div style={{ width: 500 }}>
-        <SelectFromList
-          label="Seleccionar Apartamentos"
+        <ApartmentSelection
+          apartments={apartments}
+          users={users}
           onSave={(apts) => {
             setSelectedApts(apts);
             handleModal();
           }}
-          list={apartments.map((apt) => apt.name)}
         />
       </div>
     );

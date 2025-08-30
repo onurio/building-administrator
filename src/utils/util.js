@@ -140,158 +140,177 @@ export const createPdfInvoice = (reciept, date = new Date()) => {
     return `${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
+  // Track current Y position for relative positioning
+  let yPos = 0;
+
   // Add background color
   doc.setFillColor(...backgroundColor);
   doc.rect(0, 0, pageWidth, pageHeight, 'F');
 
-  // Header section with gradient-like effect
+  // Header section - smaller and more compact
   doc.setFillColor(...primaryColor);
-  doc.rect(0, 0, pageWidth, 45, 'F');
+  doc.rect(0, 0, pageWidth, 28, 'F');
   
-  // Building title
+  // Building title - reduced font size
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(24);
-  doc.text("EDIFICIO JUAN DEL CARPIO 104", pageWidth / 2, 20, { align: 'center' });
+  doc.setFontSize(16);
+  doc.text("EDIFICIO JUAN DEL CARPIO 104", pageWidth / 2, 12, { align: 'center' });
   
-  doc.setFontSize(14);
-  doc.text("Estado de Cuenta Mensual", pageWidth / 2, 30, { align: 'center' });
+  doc.setFontSize(11);
+  doc.text("Estado de Cuenta Mensual", pageWidth / 2, 20, { align: 'center' });
   
-  // Invoice details box
+  // Start positioning from after header
+  yPos = 35;
+  
+  // Invoice details box - smaller with less padding
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(...lightGray);
-  doc.setLineWidth(0.5);
-  doc.roundedRect(15, 55, pageWidth - 30, 35, 3, 3, 'FD');
+  doc.setLineWidth(0.3);
+  doc.roundedRect(15, yPos, pageWidth - 30, 25, 2, 2, 'FD');
   
   doc.setTextColor(...darkGray);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text("INFORMACIÓN DEL RECIBO", 20, 68);
+  doc.setFontSize(12);
+  doc.text("INFORMACION DEL RECIBO", 20, yPos + 8);
   
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.text(`Mes de Emisión: ${formatDateSpanish(date)}`, 20, 78);
-  doc.text(`Fecha de Generación: ${format(new Date(), "dd/MM/yyyy")}`, 20, 85);
+  doc.setFontSize(9);
+  doc.text(`Mes de Emision: ${formatDateSpanish(date)}`, 20, yPos + 15);
+  doc.text(`Fecha de Generacion: ${format(new Date(), "dd/MM/yyyy")}`, 20, yPos + 20);
   
   // Generate invoice number
   const invoiceNumber = `${format(date, "yyyyMM")}-${reciept.apartment.replace(/\s+/g, '')}`;
-  doc.text(`N° Recibo: ${invoiceNumber}`, pageWidth - 20, 78, { align: 'right' });
+  doc.text(`No. Recibo: ${invoiceNumber}`, pageWidth - 20, yPos + 15, { align: 'right' });
   
-  // Tenant information box
+  // Move to next section
+  yPos += 30;
+  
+  // Tenant information box - smaller
   doc.setFillColor(255, 255, 255);
-  doc.roundedRect(15, 100, pageWidth - 30, 35, 3, 3, 'FD');
+  doc.roundedRect(15, yPos, pageWidth - 30, 22, 2, 2, 'FD');
   
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text("INFORMACIÓN DEL INQUILINO", 20, 113);
+  doc.setFontSize(12);
+  doc.text("INFORMACION DEL INQUILINO", 20, yPos + 8);
   
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.text(`Nombre: ${reciept.name}`, 20, 123);
-  doc.text(`Departamento: ${reciept.apartment}`, 20, 130);
+  doc.setFontSize(9);
+  doc.text(`Nombre: ${reciept.name}`, 20, yPos + 14);
+  doc.text(`Departamento: ${reciept.apartment}`, 20, yPos + 19);
 
-  // Charges table
-  let yPos = 150;
+  // Move to charges table
+  yPos += 27;
+  
+  // Charges table header
   doc.setFillColor(...primaryColor);
-  doc.rect(15, yPos, pageWidth - 30, 12, 'F');
+  doc.rect(15, yPos, pageWidth - 30, 9, 'F');
   
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("DESCRIPCIÓN", 20, yPos + 8);
-  doc.text("MONTO", pageWidth - 20, yPos + 8, { align: 'right' });
+  doc.setFontSize(10);
+  doc.text("DESCRIPCION", 20, yPos + 6);
+  doc.text("MONTO", pageWidth - 20, yPos + 6, { align: 'right' });
   
-  yPos += 15;
+  yPos += 11;
   doc.setTextColor(...darkGray);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   
-  // Add items to table
+  // Add items to table with tighter spacing
   fields.forEach((key, index) => {
     const value = reciept[key];
     if (value !== undefined && value > 0) {
       // Alternate row colors
       if (index % 2 === 0) {
         doc.setFillColor(248, 250, 252);
-        doc.rect(15, yPos - 3, pageWidth - 30, 10, 'F');
+        doc.rect(15, yPos - 2, pageWidth - 30, 7, 'F');
       }
       
-      doc.text(fieldMapper?.[key] || key, 20, yPos + 5);
-      doc.text(formatCurrency(value), pageWidth - 20, yPos + 5, { align: 'right' });
-      yPos += 12;
+      doc.text(fieldMapper?.[key] || key, 20, yPos + 3);
+      doc.text(formatCurrency(value), pageWidth - 20, yPos + 3, { align: 'right' });
+      yPos += 8;
     }
   });
 
   // Subtotal and total section
-  yPos += 10;
+  yPos += 5;
   doc.setDrawColor(...lightGray);
   doc.line(15, yPos, pageWidth - 15, yPos);
-  yPos += 8;
+  yPos += 5;
   
   doc.setFont("helvetica", "normal");
-  doc.text("Subtotal (sin renta):", pageWidth - 80, yPos);
+  doc.setFontSize(9);
+  doc.text("Subtotal (sin renta):", pageWidth - 70, yPos);
   doc.text(formatCurrency(reciept.subTotal), pageWidth - 20, yPos, { align: 'right' });
-  yPos += 12;
+  yPos += 8;
   
   // Total with highlight
   doc.setFillColor(...primaryColor);
-  doc.rect(pageWidth - 85, yPos - 5, 70, 15, 'F');
+  doc.rect(pageWidth - 75, yPos - 4, 60, 11, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("TOTAL:", pageWidth - 80, yPos + 5);
-  doc.text(formatCurrency(reciept.total), pageWidth - 20, yPos + 5, { align: 'right' });
+  doc.setFontSize(10);
+  doc.text("TOTAL:", pageWidth - 70, yPos + 3);
+  doc.text(formatCurrency(reciept.total), pageWidth - 20, yPos + 3, { align: 'right' });
 
   // Payment instructions section
-  yPos += 25;
+  yPos += 18;
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(...lightGray);
-  doc.roundedRect(15, yPos, pageWidth - 30, 45, 3, 3, 'FD');
+  doc.roundedRect(15, yPos, pageWidth - 30, 35, 2, 2, 'FD');
   
   doc.setTextColor(...darkGray);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("INFORMACIÓN DE PAGO", 20, yPos + 12);
+  doc.setFontSize(10);
+  doc.text("INFORMACION DE PAGO", 20, yPos + 8);
   
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   const paymentText = [
-    "• Fecha límite de pago: 5to día de cada mes",
-    "• Banco: Interbank",
-    "• Cuenta: 294-3147140804",
-    "• CCI: 003-294-013147140804-60",
-    "• Titular: Federico Roque Octavio Debernardi Migliaro"
+    "- Fecha limite de pago: 5to dia de cada mes",
+    "- Banco: Interbank",
+    "- Cuenta: 294-3147140804",
+    "- CCI: 003-294-013147140804-60",
+    "- Titular: Federico Roque Octavio Debernardi Migliaro"
   ];
   
   paymentText.forEach((line, index) => {
-    doc.text(line, 20, yPos + 22 + (index * 5));
+    doc.text(line, 20, yPos + 15 + (index * 4));
   });
 
-  // Footer section
-  yPos = pageHeight - 40;
+  // Footer section - using relative positioning
+  yPos += 42;
+  
+  // Instructions text
   doc.setTextColor(...lightGray);
   doc.setFont("helvetica", "italic");
-  doc.setFontSize(9);
-  doc.text("Por favor, envíe el comprobante de pago a través de la aplicación del edificio", 
+  doc.setFontSize(8);
+  doc.text("Por favor, envie el comprobante de pago a traves de la aplicacion del edificio", 
            pageWidth / 2, yPos, { align: 'center' });
-  doc.text("o al correo electrónico de la administración.", 
-           pageWidth / 2, yPos + 6, { align: 'center' });
+  doc.text("o al correo electronico de la administracion.", 
+           pageWidth / 2, yPos + 4, { align: 'center' });
 
+  // Closing
+  yPos += 12;
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...darkGray);
-  doc.text("Atentamente,", pageWidth / 2, yPos + 20, { align: 'center' });
-  doc.text("La Administración", pageWidth / 2, yPos + 26, { align: 'center' });
+  doc.setFontSize(9);
+  doc.text("Atentamente,", pageWidth / 2, yPos, { align: 'center' });
+  doc.text("La Administracion", pageWidth / 2, yPos + 5, { align: 'center' });
 
-  // Add footer line
+  // Footer line and timestamp
+  yPos += 15;
   doc.setDrawColor(...lightGray);
-  doc.setLineWidth(0.5);
-  doc.line(15, pageHeight - 15, pageWidth - 15, pageHeight - 15);
+  doc.setLineWidth(0.3);
+  doc.line(15, yPos, pageWidth - 15, yPos);
   
+  yPos += 5;
   doc.setTextColor(...lightGray);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
+  doc.setFontSize(7);
   doc.text(`Generado el ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 
-           pageWidth / 2, pageHeight - 8, { align: 'center' });
+           pageWidth / 2, yPos, { align: 'center' });
 
   return doc;
 };
